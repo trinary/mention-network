@@ -8,6 +8,7 @@
 /* global window: false */
 /* jshint -W015 */
 /* jshint camelcase: false */
+
 (function() {
   'use strict';
 
@@ -26,27 +27,6 @@
 
   var canvas = document.getElementsByTagName("canvas")[0];
   var context = canvas.getContext("2d");
-
-  var lastX=canvas.width/2, lastY=canvas.height/2;
-
-  var zoom = function(clicks) {
-    var pt = context.transformedPoint(lastX,lastY);
-    context.translate(pt.x,pt.y);
-    var factor = Math.pow(scaleFactor,clicks);
-    context.scale(factor,factor);
-    context.translate(-pt.x,-pt.y);
-    tick();
-  };
-
-
-  var handleScroll = function(evt){
-    var delta = evt.wheelDelta ? evt.wheelDelta/40 : evt.detail ? -evt.detail : 0;
-    if (delta) zoom(delta);
-    return evt.preventDefault() && false;
-  };
-
-  canvas.addEventListener('DOMMouseScroll',handleScroll,false);
-  canvas.addEventListener('mousewheel',handleScroll,false);
 
   // build force layout
   var force = d3.layout.force()
@@ -96,7 +76,7 @@
       nodes[indexMap[user.id].index].text = tweet.body;
     }
 
-    //evict(indexMap);
+    evict();
 
     for (var i = 0; i < mentions.length; i++) {
       var m = mentions[i];
@@ -119,24 +99,30 @@
     }
   });
 
-  function evict(indexMap) {
+  function evict() {
     var randomIndex, randomUser, keys = Object.keys(indexMap);
 
+
     while(nodes.length > limit) {
-      randomUser = indexMap[randomIndex];
-      delete nodes[randomUser.index];
+      debugger;
+      randomIndex = ~~(Math.random() * nodes.length);
+      console.log(nodes.length, randomIndex);
+      if(randomIndex > 1) { 
+        delete indexMap[nodes[randomIndex].id];
+        nodes = d3.merge([nodes.slice(0,randomIndex), nodes.slice(randomIndex + 1, nodes.length)]);
+      }
     }
   }
 
   function tick() {
-    context.clearRect(0, 0, width, height);
+    canvas.width = canvas.width;
 
     // draw links
     context.strokeStyle = "#ccc";
     context.beginPath();
     links.forEach(function(d) {
-      context.moveTo(d.source.x, d.source.y);
-      context.lineTo(d.target.x, d.target.y);
+      context.moveTo(~~d.source.x, ~~d.source.y);
+      context.lineTo(~~d.target.x, ~~d.target.y);
     });
     context.stroke();
 
@@ -146,18 +132,11 @@
     nodes.forEach(function(d) {
       context.moveTo(d.x, d.y);
       if (d.loaded) {
-        context.drawImage(d.image, d.x - 6, d.y - 6, d.image.width * 0.25, d.image.height * 0.25);
+        context.drawImage(d.image, ~~d.x - 6, ~~d.y - 6, d.image.width * 0.25, d.image.height * 0.25);
       } else {
-        context.fillRect(d.x - 6 , d.y -6, 12, 12);
+        context.rect(~~d.x - 6 , ~~d.y -6, 12, 12);
       }
     });
-
-    // draw stats
-    context.fillStyle = '#ccc';
-    context.font = 'bold 30px sans-serif';
-    context.textBaseline = 'bottom';
-    context.fillText("Nodes: " + nodes.length, 40, 40);
-    context.fillText("Edges: " + links.length, 40, 80);
     context.fill();
   }
 }());
