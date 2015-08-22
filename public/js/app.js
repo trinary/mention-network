@@ -16,25 +16,62 @@
   var socket = io();
   //
   //setup some common vars
-  var width = window.innerWidth, // default width
-      height = window.innerHeight, // default height
-      limit = 30,
-      nodes = [], links = [], indexMap = {}, mentionCount = 0, images = {};
+  function Params() {
+    this.width = window.innerWidth; // default width
+    this.height = window.innerHeight; // default height
+    this.limit = 30;
+    this.linkStrength = 0.1;
+    this.friction = 0.9;
+    this.linkDistance = 20;
+    this.charge = -30;
+    this.gravity = 0.1;
+    this.theta = 0.8;
+    this.alpha = 0.1;
 
-    d3.select('body').append('canvas')
-      .attr('width', width)
-      .attr('height', height);
+    this.update = function() {
+      console.log("params", this.object);
+      force
+        .size([this.object.width, this.object.height])
+        .linkStrength(this.object.linkStrength)
+        .friction(this.object.friction)
+        .linkDistance(this.object.linkDistance)
+        .charge(this.object.charge)
+        .gravity(this.object.gravity)
+        .theta(this.object.theta)
+        .alpha(this.object.alpha);
+    };
+  }
+
+  var nodes = [], links = [], indexMap = {}, mentionCount = 0;
+  var params = new Params();
+  var gui = new dat.GUI();
+  gui.add(params, 'charge').onFinishChange(params.update);
+  gui.add(params, 'width').onFinishChange(params.update);
+  gui.add(params, 'height').onFinishChange(params.update);
+  gui.add(params, 'limit').onFinishChange(params.update);
+  gui.add(params, 'linkStrength', 0, 100).onFinishChange(params.update);
+  gui.add(params, 'friction').onFinishChange(params.update);
+  gui.add(params, 'linkDistance').onFinishChange(params.update);
+  gui.add(params, 'charge').onFinishChange(params.update);
+  gui.add(params, 'gravity').onFinishChange(params.update);
+  gui.add(params, 'theta').onFinishChange(params.update);
+  gui.add(params, 'alpha').onFinishChange(params.update);
+
+  d3.select('body').append('canvas')
+      .attr('width', params.width)
+      .attr('height', params.height);
 
   var canvas = document.getElementsByTagName("canvas")[0];
   var context = canvas.getContext("2d");
 
   // build force layout
   var force = d3.layout.force()
+      .size([params.width, params.height])
       .nodes(nodes)
       .links(links)
-      .size([width, height])
-      .on('tick', tick)
-      .start();
+      .on('tick', tick);
+
+  force.start();
 
   socket.on('tweet', function (tweet) {
     var user = {
@@ -76,7 +113,7 @@
       nodes[indexMap[user.id].index].text = tweet.body;
     }
 
-    evict();
+//    evict();
 
     for (var i = 0; i < mentions.length; i++) {
       var m = mentions[i];
@@ -102,9 +139,7 @@
   function evict() {
     var randomIndex, randomUser, keys = Object.keys(indexMap);
 
-
     while(nodes.length > limit) {
-      debugger;
       randomIndex = ~~(Math.random() * nodes.length);
       console.log(nodes.length, randomIndex);
       if(randomIndex > 1) { 

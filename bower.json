@@ -1,0 +1,20 @@
+{
+  "name": "mention-network",
+  "version": "0.0.0",
+  "homepage": "https://github.com/trinary/mention-network",
+  "authors": [
+    "Erik Cunningham <djtrinary@gmail.com>"
+  ],
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "d3": "~3.5.6",
+    "dat-gui": "~0.5.1"
+  }
+}
