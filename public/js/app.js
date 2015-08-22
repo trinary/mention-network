@@ -45,17 +45,18 @@
   var nodes = [], links = [], indexMap = {}, mentionCount = 0;
   var params = new Params();
   var gui = new dat.GUI();
+  var lastFrame = new Date();
   gui.add(params, 'charge').onFinishChange(params.update);
   gui.add(params, 'width').onFinishChange(params.update);
   gui.add(params, 'height').onFinishChange(params.update);
   gui.add(params, 'limit').onFinishChange(params.update);
-  gui.add(params, 'linkStrength', 0, 100).onFinishChange(params.update);
-  gui.add(params, 'friction').onFinishChange(params.update);
-  gui.add(params, 'linkDistance').onFinishChange(params.update);
-  gui.add(params, 'charge').onFinishChange(params.update);
-  gui.add(params, 'gravity').onFinishChange(params.update);
-  gui.add(params, 'theta').onFinishChange(params.update);
-  gui.add(params, 'alpha').onFinishChange(params.update);
+  gui.add(params, 'linkStrength', 0, 10).onFinishChange(params.update);
+  gui.add(params, 'friction', 0, 1).onFinishChange(params.update);
+  gui.add(params, 'linkDistance', 0, 20).onFinishChange(params.update);
+  gui.add(params, 'charge', 0, 1).onFinishChange(params.update);
+  gui.add(params, 'gravity', 0, 1).onFinishChange(params.update);
+  gui.add(params, 'theta', 0, 1).onFinishChange(params.update);
+  gui.add(params, 'alpha', 0, 1).onFinishChange(params.update);
 
   d3.select('body').append('canvas')
       .attr('width', params.width)
