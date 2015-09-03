@@ -19,7 +19,7 @@
   function Params() {
     this.width = window.innerWidth; // default width
     this.height = window.innerHeight; // default height
-    this.limit = 30;
+    this.limit = 1000;
     this.linkStrength = 0.1;
     this.friction = 0.9;
     this.linkDistance = 20;
@@ -30,6 +30,11 @@
 
     this.update = function() {
       console.log("params", this.object);
+
+      d3.select('canvas')
+        .attr('width', params.width)
+        .attr('height', params.height);
+
       force
         .size([this.object.width, this.object.height])
         .linkStrength(this.object.linkStrength)
@@ -51,8 +56,8 @@
   gui.add(params, 'limit').onFinishChange(params.update);
   gui.add(params, 'linkStrength', 0, 10).onFinishChange(params.update);
   gui.add(params, 'friction', 0, 1).onFinishChange(params.update);
-  gui.add(params, 'linkDistance', 0, 20).onFinishChange(params.update);
-  gui.add(params, 'charge', -30, 30).onFinishChange(params.update);
+  gui.add(params, 'linkDistance', 0, 60).onFinishChange(params.update);
+  gui.add(params, 'charge', -60, 30).onFinishChange(params.update);
   gui.add(params, 'gravity', 0, 1).onFinishChange(params.update);
   gui.add(params, 'theta', 0, 1).onFinishChange(params.update);
   gui.add(params, 'alpha', 0, 1).onFinishChange(params.update);
@@ -74,6 +79,7 @@
   force.start();
 
   socket.on('tweet', function (tweet) {
+    evict(params);
     var user = {
       name: tweet.actor.preferredUsername,
       displayName: tweet.actor.displayName,
@@ -113,7 +119,6 @@
       nodes[indexMap[user.id].index].text = tweet.body;
     }
 
-//    evict();
 
     for (var i = 0; i < mentions.length; i++) {
       var m = mentions[i];
@@ -136,10 +141,20 @@
     }
   });
 
-  function evict() {
+  function clearEvict(params) {
+    if (nodes.length > params.limit) {
+      nodes = [];
+      links = [];
+      indexMap = {};
+    }
+  }
+
+  function evict(params) { clearEvict(params); }
+
+/*  function evict(params) {
     var randomIndex, randomUser, keys = Object.keys(indexMap);
 
-    while(nodes.length > limit) {
+    while(nodes.length > params.limit) {
       randomIndex = ~~(Math.random() * nodes.length);
       console.log(nodes.length, randomIndex);
       if(randomIndex > 1) { 
@@ -149,6 +164,7 @@
     }
   }
 
+*/
   function tick() {
     canvas.width = canvas.width;
 
@@ -167,9 +183,9 @@
     nodes.forEach(function(d) {
       context.moveTo(d.x, d.y);
       if (d.loaded) {
-        context.drawImage(d.image, ~~d.x - 6, ~~d.y - 6, d.image.width * 0.25, d.image.height * 0.25);
+        context.drawImage(d.image, ~~d.x - 12, ~~d.y - 12, d.image.width * 0.5, d.image.height * 0.5);
       } else {
-        context.rect(~~d.x - 6 , ~~d.y -6, 12, 12);
+        context.rect(~~d.x - 6 , ~~d.y - 6, 12, 12);
       }
     });
     context.fill();
