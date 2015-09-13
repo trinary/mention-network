@@ -136,6 +136,8 @@
       nodes[indexMap[user.id].index].image = user.image;
       nodes[indexMap[user.id].index].summary = user.summary;
       nodes[indexMap[user.id].index].text = tweet.body;
+      nodes[indexMap[user.id].index].currentTag = user.currentTag;
+      nodes[indexMap[user.id].index].focus = [Math.cos(angleScale(user.currentTag)) * params.radius, Math.sin(angleScale(user.currentTag)) * params.radius];
     }
 
     for (var i = 0; i < mentions.length; i++) {
