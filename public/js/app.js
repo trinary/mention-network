@@ -27,10 +27,11 @@
     this.gravity = 0.1;
     this.theta = 0.8;
     this.alpha = 0.1;
+    this.center = [(this.width / 2), (this.height / 2)];
+    this.radius = (this.width > this.height) ? (this.width / 4) : (this.height / 4);
 
     this.update = function() {
-      console.log("params", this.object);
-
+      this.center = [(this.width / 2), (this.height / 2)];
       d3.select('canvas')
         .attr('width', params.width)
         .attr('height', params.height);
@@ -61,6 +62,7 @@
   gui.add(params, 'gravity', 0, 1).onFinishChange(params.update);
   gui.add(params, 'theta', 0, 1).onFinishChange(params.update);
   gui.add(params, 'alpha', 0, 1).onFinishChange(params.update);
+  gui.add(params, 'radius', 0, 1000).onFinishChange(params.update);
 
   d3.select('body').append('canvas')
       .attr('width', params.width)
@@ -68,6 +70,9 @@
 
   var canvas = document.getElementsByTagName("canvas")[0];
   var context = canvas.getContext("2d");
+  var foci = {};
+  var angleScale = d3.scale.ordinal()
+    .rangePoints([0,2 * Math.PI]);
 
   // build force layout
   var force = d3.layout.force()
@@ -80,6 +85,7 @@
 
   socket.on('tweet', function (tweet) {
     evict(params);
+
     var user = {
       name: tweet.actor.preferredUsername,
       displayName: tweet.actor.displayName,
@@ -87,8 +93,19 @@
       image: new Image(),
       text: tweet.body,
       summary: tweet.actor.summary,
-      loaded: false
+      loaded: false,
+      focus: params.center,
+      currentTag: undefined
     };
+
+    if (tweet.gnip.matching_rules) {
+      tweet.gnip.matching_rules.forEach(function(d) {
+        foci[d.tag] = true;
+        angleScale.domain(d3.keys(foci));
+      });
+      user.currentTag = tweet.gnip.matching_rules[tweet.gnip.matching_rules.length - 1].tag;
+      user.focus = [Math.cos(angleScale(user.currentTag)) * params.radius, Math.sin(angleScale(user.currentTag)) * params.radius];
+    }
 
     user.image.src = tweet.actor.image;
     user.image.onload = function() { 
@@ -104,7 +121,9 @@
         displayName: m.name,
         image: new Image(),
         id: m.id,
-        loaded: false
+        loaded: false,
+        currentTag: user.currentTag,
+        focus: [Math.cos(angleScale(user.currentTag)) * params.radius, Math.sin(angleScale(user.currentTag)) * params.radius]
       };
 
       return mentioned;
@@ -118,7 +137,6 @@
       nodes[indexMap[user.id].index].summary = user.summary;
       nodes[indexMap[user.id].index].text = tweet.body;
     }
-
 
     for (var i = 0; i < mentions.length; i++) {
       var m = mentions[i];
@@ -156,14 +174,12 @@
 
     while(nodes.length > params.limit) {
       randomIndex = ~~(Math.random() * nodes.length);
-      console.log(nodes.length, randomIndex);
       if(randomIndex > 1) { 
         delete indexMap[nodes[randomIndex].id];
         nodes = d3.merge([nodes.slice(0,randomIndex), nodes.slice(randomIndex + 1, nodes.length)]);
       }
     }
   }
-
 */
   function tick() {
     canvas.width = canvas.width;
@@ -172,8 +188,8 @@
     context.strokeStyle = "#ccc";
     context.beginPath();
     links.forEach(function(d) {
-      context.moveTo(~~d.source.x, ~~d.source.y);
-      context.lineTo(~~d.target.x, ~~d.target.y);
+      context.moveTo(~~(d.source.x - d.source.focus[0]), ~~(d.source.y - d.source.focus[1]));
+      context.lineTo(~~(d.target.x - d.target.focus[0]), ~~(d.target.y - d.target.focus[1]));
     });
     context.stroke();
 
@@ -181,11 +197,10 @@
     context.beginPath();
     context.fillStyle = "#55acee";
     nodes.forEach(function(d) {
-      context.moveTo(d.x, d.y);
       if (d.loaded) {
-        context.drawImage(d.image, ~~d.x - 12, ~~d.y - 12, d.image.width * 0.5, d.image.height * 0.5);
+        context.drawImage(d.image, ~~(d.x - 6 - d.focus[0]), ~~(d.y - 6 - d.focus[1]), d.image.width * 0.25, d.image.height * 0.25);
       } else {
-        context.rect(~~d.x - 6 , ~~d.y - 6, 12, 12);
+        context.rect(~~(d.x - 6 - d.focus[0]), ~~(d.y - 6 - d.focus[1]), 12, 12);
       }
     });
     context.fill();
