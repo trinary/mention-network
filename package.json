@@ -10,7 +10,7 @@
   "license": "ISC",
   "dependencies": {
     "express": "^4.13.1",
-    "powersocket": "^1.0.0",
+    "powersocket": "^1.1.0",
     "socket.io": "^1.3.6"
   }
 }

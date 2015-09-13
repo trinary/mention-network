@@ -9,9 +9,7 @@ var io = require('socket.io')(http);
 var ps = require('powersocket');
 
 ps.configuration({
-  username: process.env.POWERSOCKET_USER,
-  password: process.env.POWERSOCKET_PASS,
-  path: process.env.POWERSOCKET_PATH
+  url: process.env.POWERSOCKET_URL
 });
 
 ps.callback(function(tweet) {
