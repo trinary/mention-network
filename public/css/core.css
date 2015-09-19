@@ -1,40 +1,16 @@
+html {
+  background: url("/img/bg.jpg") no-repeat center center fixed;
+  -webkit-background-size: cover;
+  -moz-background-size: cover;
+  -o-background-size: cover;
+  background-size: cover;
+}
+
 body {
   font-family: Sans-Serif;
 }
 
-.username {
-  font-size: 30px;
+canvas {
+  opacity: 0.75;
 }
 
-.LIVE {
-  font-size: 30px;
-}
-
-.summary {
-  font-size: 12px;
-}
-
-.node {
-  cursor: pointer;
-}
-
-.data_container {
-  font-size: 32px;
-  text-anchor: end;
-}
-.graph_container {
-  pointer-events: visibleFill;
-}
-
-.zoom_container {
-  stroke: none;
-  pointer-events: all;
-  fill-opacity: 0%;
-}
-
-.mouseover_container {
-  position: absolute;
-  z-index: 1000;
-  pointer-events: none;
-  max-width: 400px;
-}

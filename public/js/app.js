@@ -23,7 +23,7 @@
     this.linkStrength = 0.1;
     this.friction = 0.9;
     this.linkDistance = 20;
-    this.charge = -30;
+    this.charge = -55;
     this.gravity = 0.1;
     this.theta = 0.8;
     this.alpha = 0.1;
@@ -51,13 +51,14 @@
   var params = new Params();
   var gui = new dat.GUI();
   var lastFrame = new Date();
+
   gui.add(params, 'width').onFinishChange(params.update);
   gui.add(params, 'height').onFinishChange(params.update);
   gui.add(params, 'limit').onFinishChange(params.update);
   gui.add(params, 'linkStrength', 0, 10).onFinishChange(params.update);
   gui.add(params, 'friction', 0, 1).onFinishChange(params.update);
   gui.add(params, 'linkDistance', 0, 60).onFinishChange(params.update);
-  gui.add(params, 'charge', -60, 30).onFinishChange(params.update);
+  gui.add(params, 'charge', -120, 30).onFinishChange(params.update);
   gui.add(params, 'gravity', 0, 1).onFinishChange(params.update);
   gui.add(params, 'theta', 0, 1).onFinishChange(params.update);
   gui.add(params, 'alpha', 0, 1).onFinishChange(params.update);
@@ -119,7 +120,6 @@
       nodes[indexMap[user.id].index].text = tweet.body;
     }
 
-
     for (var i = 0; i < mentions.length; i++) {
       var m = mentions[i];
       mentionCount += 1;
@@ -179,13 +179,15 @@
 
     // draw nodes
     context.beginPath();
-    context.fillStyle = "#55acee";
+    context.fillStyle = "#a0ccee";
     nodes.forEach(function(d) {
-      context.moveTo(d.x, d.y);
+      var dx = ~~d.x;
+      var dy = ~~d.y;
+      context.moveTo(dx, dy);
       if (d.loaded) {
-        context.drawImage(d.image, ~~d.x - 12, ~~d.y - 12, d.image.width * 0.5, d.image.height * 0.5);
+        context.drawImage(d.image, dx - 12, dy - 12, d.image.width * 0.5, d.image.height * 0.5);
       } else {
-        context.rect(~~d.x - 6 , ~~d.y - 6, 12, 12);
+        context.arc(dx, dy, 8, 2 * Math.PI, false);
       }
     });
     context.fill();
