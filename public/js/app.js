@@ -48,9 +48,8 @@
   }
 
   var nodes = [], links = [], indexMap = {}, mentionCount = 0;
-  var params = new Params();
   var gui = new dat.GUI();
-  var lastFrame = new Date();
+  var params = new Params();
 
   gui.add(params, 'width').onFinishChange(params.update);
   gui.add(params, 'height').onFinishChange(params.update);
@@ -79,67 +78,70 @@
 
   force.start();
 
-  socket.on('tweet', function (tweet) {
-    evict(params);
-    var user = {
-      name: tweet.actor.preferredUsername,
-      displayName: tweet.actor.displayName,
-      id: +(tweet.actor.id.split(':')[2]),
-      image: new Image(),
-      text: tweet.body,
-      summary: tweet.actor.summary,
-      loaded: false
-    };
-
-    user.image.src = tweet.actor.image;
-    user.image.onload = function() { 
-      user.loaded = true;
-      tick();
-    };
-
-    if (tweet.twitter_entities.user_mentions.length === 0) { return; }
-
-    var mentions = tweet.twitter_entities.user_mentions.map(function (m) {
-      var mentioned = {
-        name: m.screen_name,
-        displayName: m.name,
+  var processTweet = function (tweet) {
+    try {
+      evict(params);
+      var user = {
+        name: tweet.actor.preferredUsername,
+        displayName: tweet.actor.displayName,
+        id: +(tweet.actor.id.split(':')[2]),
         image: new Image(),
-        id: m.id,
+        text: tweet.body,
+        summary: tweet.actor.summary,
         loaded: false
       };
 
-      return mentioned;
-    });
+      user.image.src = tweet.actor.image;
+      user.image.onload = function() { 
+        user.loaded = true;
+      };
 
-    if (! indexMap[user.id]) {
-      nodes.push(user);
-      indexMap[user.id] = { index: nodes.length - 1, links: [] };
-    } else {
-      nodes[indexMap[user.id].index].image = user.image;
-      nodes[indexMap[user.id].index].summary = user.summary;
-      nodes[indexMap[user.id].index].text = tweet.body;
-    }
+      if (tweet.twitter_entities.user_mentions.length === 0) { return; }
 
-    for (var i = 0; i < mentions.length; i++) {
-      var m = mentions[i];
-      mentionCount += 1;
+      var mentions = tweet.twitter_entities.user_mentions.map(function (m) {
+        var mentioned = {
+          name: m.screen_name,
+          displayName: m.name,
+          image: new Image(),
+          id: m.id,
+          loaded: false
+        };
 
-      if (! indexMap[m.id]) {
-        nodes.push(m);
-        indexMap[m.id] = { index: nodes.length - 1, links: [] };
+        return mentioned;
+      });
+
+      if (! indexMap[user.id]) {
+        nodes.push(user);
+        indexMap[user.id] = { index: nodes.length - 1, links: [] };
+      } else {
+        nodes[indexMap[user.id].index].image = user.image;
+        nodes[indexMap[user.id].index].summary = user.summary;
+        nodes[indexMap[user.id].index].text = tweet.body;
       }
 
-      if (m.id !== user.id && indexMap[user.id].links.indexOf(m.id) === -1) {
-        indexMap[user.id].links.push(m.id);
-        links.push({source: nodes[indexMap[user.id].index], target: nodes[indexMap[m.id].index], value: 1 });
-      }
+      for (var i = 0; i < mentions.length; i++) {
+        var m = mentions[i];
+        mentionCount += 1;
 
-      force
-        .nodes(nodes)
-        .links(links)
-        .start();
+        if (! indexMap[m.id]) {
+          nodes.push(m);
+          indexMap[m.id] = { index: nodes.length - 1, links: [] };
+        }
+
+        if (m.id !== user.id && indexMap[user.id].links.indexOf(m.id) === -1) {
+          indexMap[user.id].links.push(m.id);
+          links.push({source: nodes[indexMap[user.id].index], target: nodes[indexMap[m.id].index], value: 1 });
+        }
+
+        force
+          .nodes(nodes)
+          .links(links)
+          .start();
+      }
+    } catch(e) {
+      console.log("Caught an error: ", e);
     }
-  });
+  };
 
   function clearEvict(params) {
     if (nodes.length > params.limit) {
@@ -151,7 +153,7 @@
 
   function evict(params) { clearEvict(params); }
 
-/*  function evict(params) {
+/*  function randomEvict(params) {
     var randomIndex, randomUser, keys = Object.keys(indexMap);
 
     while(nodes.length > params.limit) {
@@ -166,6 +168,7 @@
 
 */
   function tick() {
+    var clipList = [];
     canvas.width = canvas.width;
 
     // draw links
@@ -176,6 +179,16 @@
       context.lineTo(~~d.target.x, ~~d.target.y);
     });
     context.stroke();
+
+    // Add a clip mask to avatar images
+    clipList = nodes.map(function(d) { return [d.x, d.y];});
+    context.save();
+    context.beginPath();
+    clipList.forEach(function(d) { 
+      context.moveTo(d[0], d[1]);
+      context.arc(d[0], d[1], 8, 2 * Math.PI, false);
+    });
+    context.clip();
 
     // draw nodes
     context.beginPath();
@@ -191,5 +204,9 @@
       }
     });
     context.fill();
+    context.restore();
+
   }
+
+  socket.on('tweet', processTweet);
 }());
