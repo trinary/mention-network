@@ -6,13 +6,17 @@
     <title>powersocket</title>
     <meta name="description" content="stream powertrack events via websocket">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <script src="dat-gui/build/dat.gui.min.js"></script>
+    <script src="d3/d3.min.js" charset="utf-8"></script>
+    <script src="stats.js/build/stats.min.js"></script>
 
     <link rel="stylesheet" href="css/core.css">
 
   </head>
   <body>
-    <iframe seamless="yup" id="vis" src="/vis"></iframe>
-    <iframe seamless="yup" id="controls" src="/controls" height="66%" width="100%"></iframe>
-
+    <!-- socket.io -->
+    <script src="/socket.io/socket.io.js"></script>
+    <!-- APP CODE -->
+    <script src="js/app.js"></script>
   </body>
 </html>

@@ -14,64 +14,55 @@
 
   // connect to our socket server
   var socket = io();
+  var stats = new Stats();
+  stats.setMode(0);
+  stats.domElement.style.position = 'absolute';
+  stats.domElement.style.left = '0px';
+  stats.domElement.style.top = '0px';
+
+  document.body.appendChild(stats.domElement);
   //
   //setup some common vars
-  function Params() {
-    this.width = window.innerWidth; // default width
-    this.height = window.innerHeight; // default height
-    this.limit = 1000;
-    this.linkStrength = 0.1;
-    this.friction = 0.9;
-    this.linkDistance = 20;
-    this.charge = -55;
-    this.gravity = 0.1;
-    this.theta = 0.8;
-    this.alpha = 0.1;
 
-    this.update = function() {
-      console.log("params", this.object);
+  var nextCol = 1;
+  function genColor(){
+    var ret = [];
+    // via http://stackoverflow.com/a/15804183
+    if(nextCol < 16777215){
+      ret.push(nextCol & 0xff); // R
+      ret.push((nextCol & 0xff00) >> 8); // G 
+      ret.push((nextCol & 0xff0000) >> 16); // B
 
-      d3.select('canvas')
-        .attr('width', params.width)
-        .attr('height', params.height);
-
-      force
-        .size([this.object.width, this.object.height])
-        .linkStrength(this.object.linkStrength)
-        .friction(this.object.friction)
-        .linkDistance(this.object.linkDistance)
-        .charge(this.object.charge)
-        .gravity(this.object.gravity)
-        .theta(this.object.theta)
-        .alpha(this.object.alpha);
-    };
+      nextCol += 1;
+    }
+    var col = 'rgb(' + ret.join(',') + ')';
+    return col;
   }
 
-  var nodes = [], links = [], indexMap = {}, mentionCount = 0;
-  var gui = new dat.GUI();
-  var params = new Params();
+  var updateConfig = function (config) {
+      force
+        .linkStrength(config.linkStrength)
+        .friction(config.friction)
+        .linkDistance(config.linkDistance)
+        .charge(config.charge)
+        .gravity(config.gravity)
+        .theta(config.theta)
+        .alpha(config.alpha);
+  };
 
-  gui.add(params, 'width').onFinishChange(params.update);
-  gui.add(params, 'height').onFinishChange(params.update);
-  gui.add(params, 'limit').onFinishChange(params.update);
-  gui.add(params, 'linkStrength', 0, 10).onFinishChange(params.update);
-  gui.add(params, 'friction', 0, 1).onFinishChange(params.update);
-  gui.add(params, 'linkDistance', 0, 60).onFinishChange(params.update);
-  gui.add(params, 'charge', -120, 30).onFinishChange(params.update);
-  gui.add(params, 'gravity', 0, 1).onFinishChange(params.update);
-  gui.add(params, 'theta', 0, 1).onFinishChange(params.update);
-  gui.add(params, 'alpha', 0, 1).onFinishChange(params.update);
+  var nodes = [], links = [], indexMap = {}, mentionCount = 0, limit = 2000;
 
   d3.select('body').append('canvas')
-      .attr('width', params.width)
-      .attr('height', params.height);
+      .attr('width', window.innerWidth)
+      .attr('height', window.innerHeight);
 
-  var canvas = document.getElementsByTagName("canvas")[0];
-  var context = canvas.getContext("2d");
+  var canvas = document.getElementsByTagName('canvas')[0];
+  var context = canvas.getContext('2d');
+  var onloadcount = 0;
 
   // build force layout
   var force = d3.layout.force()
-      .size([params.width, params.height])
+      .size([window.innerWidth, window.innerHeight])
       .nodes(nodes)
       .links(links)
       .on('tick', tick);
@@ -80,7 +71,7 @@
 
   var processTweet = function (tweet) {
     try {
-      evict(params);
+      evict();
       var user = {
         name: tweet.actor.preferredUsername,
         displayName: tweet.actor.displayName,
@@ -91,8 +82,18 @@
         loaded: false
       };
 
-      user.image.src = tweet.actor.image;
-      user.image.onload = function() { 
+      user.image.src = "/image?q="+tweet.actor.image;
+      user.image.onload = function() {
+        if (user.loaded) { return;}
+        var c = document.createElement("canvas");
+        d3.select(c).attr({"width": 16, "height": 16});
+        var cx = c.getContext("2d");
+        cx.beginPath();
+        cx.arc(8,8, 8, 2 * Math.PI, false);
+        cx.clip();
+        cx.drawImage(this, 0,0, 16, 16);
+        var lol = c.toDataURL();
+        this.src = lol;
         user.loaded = true;
       };
 
@@ -139,40 +140,27 @@
           .start();
       }
     } catch(e) {
-      console.log("Caught an error: ", e);
+      console.log('Caught an error: ', e);
     }
   };
 
-  function clearEvict(params) {
-    if (nodes.length > params.limit) {
+  function clearEvict() {
+    if (nodes.length > limit) {
       nodes = [];
       links = [];
       indexMap = {};
     }
   }
 
-  function evict(params) { clearEvict(params); }
+  function evict() { clearEvict(); }
 
-/*  function randomEvict(params) {
-    var randomIndex, randomUser, keys = Object.keys(indexMap);
-
-    while(nodes.length > params.limit) {
-      randomIndex = ~~(Math.random() * nodes.length);
-      console.log(nodes.length, randomIndex);
-      if(randomIndex > 1) { 
-        delete indexMap[nodes[randomIndex].id];
-        nodes = d3.merge([nodes.slice(0,randomIndex), nodes.slice(randomIndex + 1, nodes.length)]);
-      }
-    }
-  }
-
-*/
   function tick() {
+    stats.begin();
     var clipList = [];
     canvas.width = canvas.width;
 
     // draw links
-    context.strokeStyle = "#ccc";
+    context.strokeStyle = '#ccc';
     context.beginPath();
     links.forEach(function(d) {
       context.moveTo(~~d.source.x, ~~d.source.y);
@@ -180,33 +168,24 @@
     });
     context.stroke();
 
-    // Add a clip mask to avatar images
-    clipList = nodes.map(function(d) { return [d.x, d.y];});
-    context.save();
-    context.beginPath();
-    clipList.forEach(function(d) { 
-      context.moveTo(d[0], d[1]);
-      context.arc(d[0], d[1], 8, 2 * Math.PI, false);
-    });
-    context.clip();
-
     // draw nodes
     context.beginPath();
-    context.fillStyle = "#a0ccee";
+    context.fillStyle = '#a0ccee';
     nodes.forEach(function(d) {
       var dx = ~~d.x;
       var dy = ~~d.y;
       context.moveTo(dx, dy);
       if (d.loaded) {
-        context.drawImage(d.image, dx - 12, dy - 12, d.image.width * 0.5, d.image.height * 0.5);
+        context.drawImage(d.image, dx-8, dy-8, d.image.width, d.image.height);
       } else {
         context.arc(dx, dy, 8, 2 * Math.PI, false);
       }
     });
     context.fill();
     context.restore();
-
+    stats.end();
   }
 
   socket.on('tweet', processTweet);
+  socket.on('config', updateConfig);
 }());

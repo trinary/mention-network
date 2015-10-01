@@ -10,3 +10,22 @@ canvas {
   opacity: 0.85;
 }
 
+iframe[seamless]{
+  background-color: transparent;
+  border: 0px none transparent;
+  padding: 0px;
+  overflow: hidden;
+}
+
+#vis {
+  position:absolute;
+  height: 66%;
+  width: 100%;
+}
+
+#controls {
+  position: absolute;
+  height 33%;
+  width: 100%;
+  top: 66%;
+}
