@@ -41,9 +41,9 @@
 
   var updateConfig = function (config) {
       force
-        .linkStrength(config.linkStrength)
+        .linkStrength(config.linkstrength)
         .friction(config.friction)
-        .linkDistance(config.linkDistance)
+        .linkDistance(config.linkdistance)
         .charge(config.charge)
         .gravity(config.gravity);
   };

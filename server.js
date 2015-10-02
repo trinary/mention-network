@@ -12,13 +12,13 @@ var https = require('https');
 var url = require('url');
 var request = require('request');
 
-ps.configuration({
-  url: process.env.POWERSOCKET_URL
+ps.Connection({
+  url: process.env.POWERSOCKET_URL,
+  onTweet: function(tweet) {
+    io.sockets.emit('tweet', tweet);
+  }
 });
 
-ps.callback(function(tweet) {
-  io.sockets.emit('tweet', tweet);
-});
 
 io.on('connection', function(socket) {
   console.log('Got a client');
