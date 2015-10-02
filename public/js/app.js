@@ -175,12 +175,12 @@
       context.moveTo(dx, dy);
       if (d.loaded) {
         try {
-          context.drawImage(d.image, dx-8, dy-8, 16, 16);
+          context.drawImage(d.image, dx-12, dy-12, 24, 24);
         } catch(e) {
           console.log(e);
         }
       } else {
-        context.arc(dx, dy, 8, 2 * Math.PI, false);
+        context.arc(dx, dy, 12, 2 * Math.PI, false);
       }
     });
     context.fill();
