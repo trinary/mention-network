@@ -74,15 +74,19 @@
     return _.isEqual(defaults, newState);
   }
 
-  d3.selectAll(".slider")
-    .data(params)
+  var sliders = d3.selectAll(".slider")
+    .data(params);
+
+  sliders
     .enter()
     .append("div")
     .attr("class", function(d,i) { return ['slider', d.klass].join(' ');})
+    .append("label")
     .text(function(d,i) { return d.name; })
+
+  sliders
     .append("input")
     .each(function(d,i) { 
       Powerange(this, d);
     });
-
 }());

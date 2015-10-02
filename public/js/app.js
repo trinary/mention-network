@@ -168,7 +168,7 @@
 
     // draw nodes
     context.beginPath();
-    context.fillStyle = '#a0ccee';
+    context.fillStyle = '#34ffe9';
     nodes.forEach(function(d) {
       var dx = ~~d.x;
       var dy = ~~d.y;
