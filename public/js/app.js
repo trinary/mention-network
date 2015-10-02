@@ -45,9 +45,7 @@
         .friction(config.friction)
         .linkDistance(config.linkDistance)
         .charge(config.charge)
-        .gravity(config.gravity)
-        .theta(config.theta)
-        .alpha(config.alpha);
+        .gravity(config.gravity);
   };
 
   var nodes = [], links = [], indexMap = {}, mentionCount = 0, limit = 2000;
@@ -86,12 +84,12 @@
       user.image.onload = function() {
         if (user.loaded) { return;}
         var c = document.createElement("canvas");
-        d3.select(c).attr({"width": 16, "height": 16});
+        d3.select(c).attr({"width": 48, "height": 48});
         var cx = c.getContext("2d");
         cx.beginPath();
-        cx.arc(8,8, 8, 2 * Math.PI, false);
+        cx.arc(24, 24, 24, 2 * Math.PI, false);
         cx.clip();
-        cx.drawImage(this, 0,0, 16, 16);
+        cx.drawImage(this, 0,0, 48, 48);
         var lol = c.toDataURL();
         this.src = lol;
         user.loaded = true;
@@ -176,7 +174,11 @@
       var dy = ~~d.y;
       context.moveTo(dx, dy);
       if (d.loaded) {
-        context.drawImage(d.image, dx-8, dy-8, d.image.width, d.image.height);
+        try {
+          context.drawImage(d.image, dx-8, dy-8, 16, 16);
+        } catch(e) {
+          console.log(e);
+        }
       } else {
         context.arc(dx, dy, 8, 2 * Math.PI, false);
       }
