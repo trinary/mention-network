@@ -173,7 +173,7 @@
 
   function createBox(node, mentions) {
     if (mentions.length === 0) { return; }
-    var box = d3.select('.popcontainer').append('div').classed('node', true);
+    var box = d3.select('.popcontainer').insert('div', ':first-child').classed('node', true);
     var marker = box.append('canvas')
       .classed('marker', true)
       .attr({
