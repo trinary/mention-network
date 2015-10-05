@@ -17,7 +17,7 @@
   var stats = new Stats();
   stats.setMode(0);
   stats.domElement.style.position = 'absolute';
-  stats.domElement.style.left = '0px';
+  stats.domElement.style.left = window.innerWidth - 100 + 'px';
   stats.domElement.style.top = '0px';
 
   document.body.appendChild(stats.domElement);
@@ -48,9 +48,27 @@
         .gravity(config.gravity);
   };
 
+  var imageScale = function(user) {
+    var now = new Date();
+    var diff = now - user.lastTweeted;
+    if (diff < 1000) {
+      return 1 + (diff / 1000);
+    } else if (diff < 10000) {
+      return 2;
+    } else if (diff < 12000) {
+      return 2 - ((diff - 10000) / 2000);
+    } else {
+      return 1;
+    }
+
+  };
+
   var nodes = [], links = [], indexMap = {}, mentionCount = 0, limit = 2000;
 
+  d3.select('body').append('div')
+      .classed('popcontainer', true);
   d3.select('body').append('canvas')
+      .classed('main', true)
       .attr('width', window.innerWidth)
       .attr('height', window.innerHeight);
 
@@ -69,7 +87,7 @@
 
   var processTweet = function (tweet) {
     try {
-      evict();
+      evict(nodes.length);
       var user = {
         name: tweet.actor.preferredUsername,
         displayName: tweet.actor.displayName,
@@ -77,6 +95,7 @@
         image: new Image(),
         text: tweet.body,
         summary: tweet.actor.summary,
+        lastTweeted: new Date(),
         loaded: false
       };
 
@@ -93,6 +112,7 @@
         var lol = c.toDataURL();
         this.src = lol;
         user.loaded = true;
+        createBox(user, tweet.twitter_entities.user_mentions);
       };
 
       if (tweet.twitter_entities.user_mentions.length === 0) { return; }
@@ -116,6 +136,7 @@
         nodes[indexMap[user.id].index].image = user.image;
         nodes[indexMap[user.id].index].summary = user.summary;
         nodes[indexMap[user.id].index].text = tweet.body;
+        nodes[indexMap[user.id].index].lastTweeted = new Date();
       }
 
       for (var i = 0; i < mentions.length; i++) {
@@ -138,19 +159,43 @@
           .start();
       }
     } catch(e) {
-      console.log('Caught an error: ', e);
+      console.log('Caught an error: ' + e, e.stack);
     }
   };
 
-  function clearEvict() {
-    if (nodes.length > limit) {
+  function clearEvict(nodeCount) {
+    if (nodeCount > limit) {
       nodes = [];
       links = [];
       indexMap = {};
     }
   }
 
-  function evict() { clearEvict(); }
+  function createBox(node, mentions) {
+    if (mentions.length === 0) { return; }
+    var box = d3.select('.popcontainer').append('div').classed('node', true);
+    var marker = box.append('canvas')
+      .classed('marker', true)
+      .attr({
+        'width': 24,
+        'height': 24
+      });
+
+    var cx = marker[0][0].getContext('2d');
+    console.log(node);
+    cx.drawImage(node.image, 0, 0, 24, 24);
+    box.append('p')
+      .classed('note', true)
+      .text(node.name);
+
+    box
+      .transition()
+      .delay(5000)
+      .style('opacity', 0)
+      .remove();
+  }
+
+  function evict(nodeCount) { clearEvict(nodeCount); }
 
   function tick() {
     stats.begin();
@@ -175,7 +220,9 @@
       context.moveTo(dx, dy);
       if (d.loaded) {
         try {
-          context.drawImage(d.image, dx-12, dy-12, 24, 24);
+          var scale = imageScale(d);
+          var size = 24 * scale;
+          context.drawImage(d.image, dx-(size/2), dy-(size/2), size, size);
         } catch(e) {
           console.log(e);
         }

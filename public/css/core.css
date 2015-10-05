@@ -1,13 +1,37 @@
 body {
-  font-family: Sans-Serif;
+  font-family: 'Gotham Narrow SSm';
 }
 
-.dg.ac {
+canvas.main {
+  opacity: 0.75;
+}
+
+.popcontainer {
+  position: absolute;
+}
+
+.marker {
+}
+
+.note {
+  padding-bottom: 4px;
+}
+
+.node {
+  color: #fff;
+  background: #222;
+  border: 1px #ccc;
+  border-radius: 4px;
+  margin: 5px;
+}
+
+.node * {
+  display: inline;
   z-index: 10;
 }
 
-canvas {
-  opacity: 0.85;
+.node p {
+  padding-bottom: 4px;
 }
 
 iframe[seamless]{
