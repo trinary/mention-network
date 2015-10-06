@@ -1,5 +1,6 @@
 body {
   font-family: 'Gotham Narrow SSm';
+  overflow: hidden;
 }
 
 canvas.main {
@@ -8,6 +9,8 @@ canvas.main {
 
 .popcontainer {
   position: absolute;
+  right: 0;
+  top: 2em;
 }
 
 .marker {
@@ -18,21 +21,29 @@ canvas.main {
 }
 
 .node {
+  /*color: #34FFE9;*/
   color: #fff;
-  background: #222;
-  border: 1px #ccc;
-  border-radius: 4px;
-  margin: 5px;
+  background: rgba(255,255,255,.2);
+  border: 1px solid rgba(255,255,255,.2);
+  border-radius: 2em;
+  margin: .5em;
+  z-index: 100;
 }
 
 .node * {
-  display: inline;
-  z-index: 10;
+  display: inline-block;
+  vertical-align: middle;
+  padding: 0 .5em;
 }
 
-.node p {
-  padding-bottom: 4px;
+.node .marker {
+  margin-left: .5em;
 }
+.node p {
+  margin-right: 1em;
+  font-weight: 500;
+}
+
 
 iframe[seamless]{
   background-color: transparent;
