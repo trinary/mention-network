@@ -69,6 +69,7 @@
         col = hiddenContext.getImageData(x,y, 1, 1).data,
         colString = "rgb(" + col[0] + "," + col[1] + ","+ col[2] + ")";
 
+    if (colString === "rgb(0,0,0)") { return; }
     if (colorMap[colString]) {
       var user = nodes[colorMap[colString].index];
       var picked = d3.select(".usercontainer")
