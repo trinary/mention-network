@@ -28,13 +28,14 @@
   function genColor(){
     var ret = [];
     // via http://stackoverflow.com/a/15804183
-    if(nextCol < 16777215){
-      ret.push(nextCol & 0xff); // R
-      ret.push((nextCol & 0xff00) >> 8); // G 
-      ret.push((nextCol & 0xff0000) >> 16); // B
-
-      nextCol += 1;
+    if(nextCol > 16777215) {
+      nextCol = 1;
     }
+    ret.push(nextCol & 0xff); // R
+    ret.push((nextCol & 0xff00) >> 8); // G 
+    ret.push((nextCol & 0xff0000) >> 16); // B
+
+    nextCol += 1;
     var col = 'rgb(' + ret.join(',') + ')';
     return col;
   }
@@ -60,21 +61,46 @@
     } else {
       return 1;
     }
-
   };
 
-  var nodes = [], links = [], indexMap = {}, mentionCount = 0, limit = 2000;
+  var handleClick = function() {
+    var x = d3.mouse(this)[0],
+        y = d3.mouse(this)[1],
+        col = hiddenContext.getImageData(x,y, 1, 1).data,
+        colString = "rgb(" + col[0] + "," + col[1] + ","+ col[2] + ")";
+
+    if (colorMap[colString]) {
+      var user = nodes[colorMap[colString].index];
+      var picked = d3.select(".usercontainer")
+        .append("p");
+      picked.text("You clicked on " + user.name);
+      picked.transition()
+        .delay(2000)
+        .attr('opacity', "0%")
+        .remove();
+    }
+
+    console.log(node, colString, d3.mouse(this), d3.touches(this));
+  };
+
+  var nodes = [], links = [], indexMap = {}, colorMap = {}, mentionCount = 0, limit = 2000;
 
   d3.select('body').append('div')
       .classed('popcontainer', true);
+  d3.select('body').append('div')
+      .classed('usercontainer', true);
   d3.select('body').append('canvas')
       .classed('main', true)
       .attr('width', window.innerWidth)
-      .attr('height', window.innerHeight);
+      .attr('height', window.innerHeight)
+      .on('click', handleClick);
 
   var canvas = document.getElementsByTagName('canvas')[0];
+  var hidden = d3.select('body').append('canvas').classed('hidden', true)
+      .attr('width', window.innerWidth)
+      .attr('height', window.innerHeight)[0][0];
+  var hiddenContext = hidden.getContext('2d');
   var context = canvas.getContext('2d');
-  var onloadcount = 0;
 
   // build force layout
   var force = d3.layout.force()
@@ -96,6 +122,7 @@
         text: tweet.body,
         summary: tweet.actor.summary,
         lastTweeted: new Date(),
+        colorPicker: 'rgb(0,0,0)',
         loaded: false
       };
 
@@ -123,6 +150,7 @@
           displayName: m.name,
           image: new Image(),
           id: m.id,
+          colorPicker: 'rgb(0,0,0)',
           loaded: false
         };
 
@@ -130,7 +158,9 @@
       });
 
       if (! indexMap[user.id]) {
+        user.colorPicker = genColor();
         nodes.push(user);
+        colorMap[user.colorPicker] = { index: nodes.length - 1 };
         indexMap[user.id] = { index: nodes.length - 1, links: [] };
       } else {
         nodes[indexMap[user.id].index].image = user.image;
@@ -144,7 +174,9 @@
         mentionCount += 1;
 
         if (! indexMap[m.id]) {
+          m.colorPicker = genColor();
           nodes.push(m);
+          colorMap[m.colorPicker] = { index: nodes.length - 1 };
           indexMap[m.id] = { index: nodes.length - 1, links: [] };
         }
 
@@ -159,7 +191,7 @@
           .start();
       }
     } catch(e) {
-      console.log('Caught an error: ' + e, e.stack);
+      console.log('Error in tweet event handler: ' + e, e.stack);
     }
   };
 
@@ -168,6 +200,7 @@
       nodes = [];
       links = [];
       indexMap = {};
+      colorMap = {};
     }
   }
 
@@ -182,7 +215,6 @@
       });
 
     var cx = marker[0][0].getContext('2d');
-    console.log(node);
     cx.drawImage(node.image, 0, 0, 24, 24);
     box.append('p')
       .classed('note', true)
@@ -201,6 +233,7 @@
     stats.begin();
     var clipList = [];
     canvas.width = canvas.width;
+    hidden.width = hidden.width;
 
     // draw links
     context.strokeStyle = '#ccc';
@@ -215,23 +248,31 @@
     context.beginPath();
     context.fillStyle = '#34ffe9';
     nodes.forEach(function(d) {
-      var dx = ~~d.x;
-      var dy = ~~d.y;
+      var dx = Math.round(d.x);
+      var dy = Math.round(d.y);
       context.moveTo(dx, dy);
+      hiddenContext.moveTo(dx, dy);
+      hiddenContext.fillStyle = d.colorPicker;
       if (d.loaded) {
         try {
           var scale = imageScale(d);
           var size = 24 * scale;
+
           context.drawImage(d.image, dx-(size/2), dy-(size/2), size, size);
+          hiddenContext.beginPath();
+          hiddenContext.arc(dx,dy, size/2, 2 * Math.PI, false);
+          hiddenContext.fill();
         } catch(e) {
-          console.log(e);
+          console.log("Error in drawImage(): " + e, e.stack);
         }
       } else {
         context.arc(dx, dy, 12, 2 * Math.PI, false);
+        hiddenContext.beginPath();
+        hiddenContext.arc(dx,dy, 12, 2 * Math.PI, false);
+        hiddenContext.fill();
       }
     });
     context.fill();
-    context.restore();
     stats.end();
   }
 

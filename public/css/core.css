@@ -10,6 +10,11 @@ canvas.main {
   position: absolute;
 }
 
+.usercontainer {
+  position: absolute;
+  left: 90%;
+}
+
 .marker {
 }
 
@@ -28,6 +33,10 @@ canvas.main {
 .node * {
   display: inline;
   z-index: 10;
+}
+
+.hidden {
+  display: none;
 }
 
 .node p {
