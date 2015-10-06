@@ -13,6 +13,11 @@ canvas.main {
   top: 2em;
 }
 
+.usercontainer {
+  position: absolute;
+  left: 90%;
+}
+
 .marker {
 }
 
@@ -39,6 +44,11 @@ canvas.main {
 .node .marker {
   margin-left: .5em;
 }
+
+.hidden {
+  display: none;
+}
+
 .node p {
   margin-right: 1em;
   font-weight: 500;
