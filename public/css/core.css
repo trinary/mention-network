@@ -15,7 +15,8 @@ canvas.main {
 
 .usercontainer {
   position: absolute;
-  left: 90%;
+  left: 0;
+  top: 2em;
 }
 
 .marker {

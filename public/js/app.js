@@ -14,13 +14,15 @@
 
   // connect to our socket server
   var socket = io();
-  var stats = new Stats();
+/*  var stats = new Stats();
   stats.setMode(0);
   stats.domElement.style.position = 'absolute';
   stats.domElement.style.left = window.innerWidth - 100 + 'px';
   stats.domElement.style.top = '0px';
 
-  document.body.appendChild(stats.domElement);
+  */
+
+//  document.body.appendChild(stats.domElement);
   //
   //setup some common vars
 
@@ -69,34 +71,37 @@
 
     var touchRadius = 24;
     var users = nodes.filter(function(d) { return Math.pow(x - d.x, 2) + Math.pow(y - d.y, 2) < 400; });
-      var user = users[0];
-      var picked = d3.select(".usercontainer")
-        .append("p");
-      picked.text("You clicked on " + user.name);
-      picked.transition()
-        .delay(2000)
-        .attr('opacity', "0%")
-        .remove();
-    /*
-    console.log(1, new Date());
-    var col = hiddenContext.getImageData(x,y, 1, 1).data;
-    console.log(2, new Date());
-    var colString = "rgb(" + col[0] + "," + col[1] + ","+ col[2] + ")";
+    if (users.length === 0) { return; }
+    var user = users[0];
+    var picked = d3.select(".usercontainer").insert('div', ':first-child').classed('node', true);
 
-    console.log(3, new Date());
-    if (colString === "rgb(0,0,0)") { return; }
-    if (colorMap[colString]) {
-      var user = nodes[colorMap[colString].index];
-    console.log(4, new Date());
-      var picked = d3.select(".usercontainer")
-        .append("p");
-      picked.text("You clicked on " + user.name);
-      picked.transition()
-        .delay(2000)
-        .attr('opacity', "0%")
-        .remove();
+    var marker = picked.append('canvas')
+      .classed('marker', true)
+      .attr({
+        'width': 24,
+        'height': 24
+      });
+
+    var cx = marker[0][0].getContext('2d');
+    if (user.loaded) {
+      cx.drawImage(user.image, 0, 0, 24, 24);
+    } else {
+      cx.fillStyle = '#34ffe9';
+      cx.arc(12, 12, 12, 2 * Math.PI, false);
+      cx.fill();
     }
-*/
+    picked.append('p')
+      .classed('note', true)
+      .text(user.name);
+    picked.append('p')
+      .classed('note', true)
+      .text(user.summary);
+
+    picked
+      .transition()
+      .delay(5000)
+      .style('opacity', 0)
+      .remove();
   };
 
   var nodes = [], links = [], indexMap = {}, colorMap = {}, mentionCount = 0, limit = 2000;
@@ -112,11 +117,6 @@
       .on('click', handleClick);
 
   var canvas = document.getElementsByTagName('canvas')[0];
-/*  var hidden = d3.select('body').append('canvas').classed('hidden', true)
-      .attr('width', window.innerWidth)
-      .attr('height', window.innerHeight)[0][0];
-  var hiddenContext = hidden.getContext('2d');
-  */
   var context = canvas.getContext('2d');
 
   // build force layout
@@ -247,10 +247,9 @@
   function evict(nodeCount) { clearEvict(nodeCount); }
 
   function tick() {
-    stats.begin();
+//    stats.begin();
     var clipList = [];
     canvas.width = canvas.width;
-//    hidden.width = hidden.width;
 
     // draw links
     context.strokeStyle = '#ccc';
@@ -268,29 +267,21 @@
       var dx = Math.round(d.x);
       var dy = Math.round(d.y);
       context.moveTo(dx, dy);
-      //hiddenContext.moveTo(dx, dy);
-      //hiddenContext.fillStyle = d.colorPicker;
       if (d.loaded) {
         try {
           var scale = imageScale(d);
           var size = 24 * scale;
 
           context.drawImage(d.image, dx-(size/2), dy-(size/2), size, size);
-          //hiddenContext.beginPath();
-          //hiddenContext.arc(dx,dy, size/2, 2 * Math.PI, false);
-         // hiddenContext.fill();
         } catch(e) {
           console.log("Error in drawImage(): " + e, e.stack);
         }
       } else {
         context.arc(dx, dy, 12, 2 * Math.PI, false);
-      //  hiddenContext.beginPath();
-     //   hiddenContext.arc(dx,dy, 12, 2 * Math.PI, false);
-     //   hiddenContext.fill();
       }
     });
     context.fill();
-    stats.end();
+//    stats.end();
   }
 
   socket.on('tweet', processTweet);
