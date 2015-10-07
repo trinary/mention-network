@@ -1,0 +1,38 @@
+<div id="tweet-item-{{id}}" class="tweet-item">
+  <div class="content">
+
+    <div class="user-info">
+      <div class="left">
+        <canvas class="usericon" width="24", height="24">
+      </div>
+      <div class="left">
+        <span class="user-name">{{name}}</span>
+      </div>
+    </div>
+
+    {{#if tweet }} 
+    <p class="tweet-text">{{tweet.body}}</p>
+    {{#if geo }} 
+    <img class="tweet-map" border="0" src="//maps.googleapis.com/maps/api/staticmap?center={{geo.lat}},{{geo.lng}}&amp;zoom=7&amp;size=310x220" alt="Greenwich, England">
+    {{/if}}
+
+    <div class="extras">
+      {{#if tweet.gnip }} 
+      <div class="gnip-info">
+        Rules
+        <ul>
+          {{#each gnip.matching_rules}}
+          <li>{{tag}} {{value}}</li>
+          {{/each}}
+        </ul>
+      </div>
+      {{/if}}
+
+      <div class="tweet-info">
+
+      </div>
+      {{/if}}
+    </div>
+    <!-- {{id}} -->
+  </div>
+</div>

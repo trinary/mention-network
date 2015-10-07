@@ -51,6 +51,24 @@
         .gravity(config.gravity);
   };
 
+  var extractGeo = function(tweet) {
+    var lat, long;
+    if (tweet.location) {
+      if (tweet.location.geo) { 
+        if (tweet.location.geo.type === 'Polygon') {
+          var ret = { 
+            lat: d3.mean(tweet.location.geo.coordinates[0], function(d) { return d[1]; }), 
+            lng: d3.mean(tweet.location.geo.coordinates[0], function(d) { return d[0]; })
+          };
+          console.log(ret);
+          return ret;
+        }
+      }
+    }
+    console.log(tweet.location);
+    return undefined; // {lat: 40.027435, lng: -105.251945};
+  };
+
   var imageScale = function(user) {
     var now = new Date();
     var diff = now - user.lastTweeted;
@@ -73,14 +91,12 @@
     var users = nodes.filter(function(d) { return Math.pow(x - d.x, 2) + Math.pow(y - d.y, 2) < 400; });
     if (users.length === 0) { return; }
     var user = users[0];
-    var picked = d3.select(".usercontainer").insert('div', ':first-child').classed('node', true);
 
-    var marker = picked.append('canvas')
-      .classed('marker', true)
-      .attr({
-        'width': 24,
-        'height': 24
-      });
+    var template = Handlebars.templates.tweetdetail(user);
+    console.log(template);
+    d3.select('#tweetdetails').html(template);
+    var marker = d3.select('#tweetdetails').select('canvas');
+
 
     var cx = marker[0][0].getContext('2d');
     if (user.loaded) {
@@ -90,18 +106,6 @@
       cx.arc(12, 12, 12, 2 * Math.PI, false);
       cx.fill();
     }
-    picked.append('p')
-      .classed('note', true)
-      .text(user.name);
-    picked.append('p')
-      .classed('note', true)
-      .text(user.summary);
-
-    picked
-      .transition()
-      .delay(5000)
-      .style('opacity', 0)
-      .remove();
   };
 
   var nodes = [], links = [], indexMap = {}, colorMap = {}, mentionCount = 0, limit = 2000;
@@ -109,7 +113,7 @@
   d3.select('body').append('div')
       .classed('popcontainer', true);
   d3.select('body').append('div')
-      .classed('usercontainer', true);
+      .attr('id', 'tweetdetails');
   d3.select('body').append('canvas')
       .classed('main', true)
       .attr('width', window.innerWidth)
@@ -136,10 +140,11 @@
         displayName: tweet.actor.displayName,
         id: +(tweet.actor.id.split(':')[2]),
         image: new Image(),
-        text: tweet.body,
+        tweet: tweet,
         summary: tweet.actor.summary,
         lastTweeted: new Date(),
         colorPicker: 'rgb(0,0,0)',
+        geo: extractGeo(tweet),
         loaded: false
       };
 
@@ -182,7 +187,7 @@
       } else {
         nodes[indexMap[user.id].index].image = user.image;
         nodes[indexMap[user.id].index].summary = user.summary;
-        nodes[indexMap[user.id].index].text = tweet.body;
+        nodes[indexMap[user.id].index].tweet = tweet;
         nodes[indexMap[user.id].index].lastTweeted = new Date();
       }
 
