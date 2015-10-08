@@ -64,7 +64,7 @@
         }
       }
     }
-    return  {lat: 40.027435, lng: -105.251945};
+    return undefined; // {lat: 40.027435, lng: -105.251945}; // Boulder, CO
   };
 
   var imageScale = function(user) {
