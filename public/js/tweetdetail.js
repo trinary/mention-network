@@ -9,9 +9,9 @@ templates['tweetdetail'] = template({"1":function(container,depth0,helpers,parti
     + ((stack1 = helpers["if"].call(alias1,(depth0 != null ? depth0.geo : depth0),{"name":"if","hash":{},"fn":container.program(2, data, 0),"inverse":container.noop,"data":data})) != null ? stack1 : "")
     + "\n    <div class=\"extras\">\n"
     + ((stack1 = helpers["if"].call(alias1,((stack1 = (depth0 != null ? depth0.tweet : depth0)) != null ? stack1.gnip : stack1),{"name":"if","hash":{},"fn":container.program(4, data, 0),"inverse":container.noop,"data":data})) != null ? stack1 : "")
-    + "\n      <div class=\"tweet-info\">\n\n      </div>\n";
+    + "\n      <div class=\"tweet-info\">\n      </div>\n";
 },"2":function(container,depth0,helpers,partials,data) {
-    return "    <canvas class=\"tweet-map\" border=\"0\" />\n";
+    return "      <canvas class=\"tweet-map\" border=\"0\"></canvas>\n";
 },"4":function(container,depth0,helpers,partials,data) {
     var stack1;
 

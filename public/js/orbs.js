@@ -26,21 +26,10 @@
   //
   //setup some common vars
 
-  var nextCol = 1;
-  function genColor(){
-    var ret = [];
-    // via http://stackoverflow.com/a/15804183
-    if(nextCol > 16777215) {
-      nextCol = 1;
-    }
-    ret.push(nextCol & 0xff); // R
-    ret.push((nextCol & 0xff00) >> 8); // G 
-    ret.push((nextCol & 0xff0000) >> 16); // B
-
-    nextCol += 1;
-    var col = 'rgb(' + ret.join(',') + ')';
-    return col;
-  }
+  var colorscale = d3.scale.category20c();
+  var randomColor = function() {
+    return colorscale(Math.random());
+  };
 
   var updateConfig = function (config) {
       force
@@ -186,28 +175,11 @@
           tweet: tweet,
           summary: tweet.actor.summary,
           lastTweeted: new Date(),
-          colorPicker: 'rgb(0,0,0)',
           geo: extractGeo(tweet),
+          color: randomColor(),
           loaded: false
         };
-        user.image.src = "/image?q="+tweet.actor.image;
-        user.image.onload = function() {
-          if (user.loaded) { return;}
-          var c = document.createElement("canvas");
-          d3.select(c).attr({"width": 48, "height": 48});
-          var cx = c.getContext("2d");
-          cx.beginPath();
-          cx.arc(24, 24, 24, 2 * Math.PI, false);
-          cx.clip();
-          cx.drawImage(this, 0,0, 48, 48);
-          var lol = c.toDataURL();
-          this.src = lol;
-          user.loaded = true;
-          createBox(user, tweet.twitter_entities.user_mentions);
-        };
-        user.colorPicker = genColor();
         nodes.push(user);
-        colorMap[user.colorPicker] = { index: nodes.length - 1 };
         indexMap[user.id] = { index: nodes.length - 1, links: [] };
       } else {
         nodes[indexMap[id].index].tweet = tweet;
@@ -222,6 +194,7 @@
           displayName: m.name,
           image: new Image(),
           id: m.id,
+          color: randomColor(),
           colorPicker: 'rgb(0,0,0)',
           loaded: false
         };
@@ -234,7 +207,6 @@
         mentionCount += 1;
 
         if (! indexMap[m.id]) {
-          m.colorPicker = genColor();
           nodes.push(m);
           colorMap[m.colorPicker] = { index: nodes.length - 1 };
           indexMap[m.id] = { index: nodes.length - 1, links: [] };
@@ -304,8 +276,6 @@
     context.stroke();
 
     // draw nodes
-    context.beginPath();
-    context.fillStyle = '#34ffe9';
     nodes.forEach(function(d) {
       var dx = Math.round(d.x);
       var dy = Math.round(d.y);
@@ -320,7 +290,10 @@
           console.log("Error in drawImage(): " + e, e.stack);
         }
       } else {
+        context.fillStyle = d.color;
+        context.beginPath();
         context.arc(dx, dy, 12, 2 * Math.PI, false);
+        context.fill();
       }
     });
     context.fill();

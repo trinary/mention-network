@@ -42,6 +42,10 @@ app.get('/controls', function(req, res) {
   res.sendFile(__dirname + '/controls.html');
 });
 
+app.get('/orbs', function(req, res) { 
+  res.sendFile(__dirname + '/orbs.html');
+});
+
 app.get('/image', function(req, res) {
   var imgUrl = url.parse(req.query.q);
   request(imgUrl.href).pipe(res);
