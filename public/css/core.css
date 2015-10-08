@@ -29,6 +29,14 @@ canvas.main {
 .marker {
 }
 
+.tweet-map {
+  width: 320px;
+  height: 200px;
+  stroke: #3d9ee8;
+  stroke-width: 1.5px;
+  fill: none;
+}
+
 .note {
   padding-bottom: 4px;
 }

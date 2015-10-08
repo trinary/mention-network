@@ -13,7 +13,7 @@
     {{#if tweet }} 
     <p class="tweet-text">{{tweet.body}}</p>
     {{#if geo }} 
-    <img class="tweet-map" border="0" src="//maps.googleapis.com/maps/api/staticmap?center={{geo.lat}},{{geo.lng}}&amp;zoom=7&amp;size=310x220" alt="Greenwich, England">
+    <canvas class="tweet-map" border="0" />
     {{/if}}
 
     <div class="extras">

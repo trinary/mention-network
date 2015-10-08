@@ -60,13 +60,11 @@
             lat: d3.mean(tweet.location.geo.coordinates[0], function(d) { return d[1]; }), 
             lng: d3.mean(tweet.location.geo.coordinates[0], function(d) { return d[0]; })
           };
-          console.log(ret);
           return ret;
         }
       }
     }
-    console.log(tweet.location);
-    return undefined; // {lat: 40.027435, lng: -105.251945};
+    return  {lat: 40.027435, lng: -105.251945};
   };
 
   var imageScale = function(user) {
@@ -89,16 +87,16 @@
 
     var touchRadius = 24;
     var users = nodes.filter(function(d) { return Math.pow(x - d.x, 2) + Math.pow(y - d.y, 2) < 400; });
-    if (users.length === 0) { return; }
+    if (users.length === 0) { 
+      d3.select('#tweetdetails').html("");
+      return;
+    }
     var user = users[0];
 
     var template = Handlebars.templates.tweetdetail(user);
-    console.log(template);
     d3.select('#tweetdetails').html(template);
     var marker = d3.select('#tweetdetails').select('canvas');
-
-
-    var cx = marker[0][0].getContext('2d');
+    var cx = marker.node().getContext('2d');
     if (user.loaded) {
       cx.drawImage(user.image, 0, 0, 24, 24);
     } else {
@@ -106,9 +104,45 @@
       cx.arc(12, 12, 12, 2 * Math.PI, false);
       cx.fill();
     }
+
+    var map = d3.select('#tweetdetails').select('canvas.tweet-map');
+    d3.json('js/world-110m.json', function(world) {
+      var globe = {type: "Sphere"},
+      land = topojson.feature(world, world.objects.land),
+      countries = topojson.feature(world, world.objects.countries).features,
+      borders = topojson.mesh(world, world.objects.countries, function(a, b) { return a !== b; }),
+      i = -1,
+      n = countries.length;
+      var c = map.node().getContext('2d');
+      var projection = d3.geo.orthographic()
+        .translate([160,100])
+        .scale(248)
+        .clipAngle(90);
+      var path = d3.geo.path()
+        .projection(projection)
+        .context(c);
+
+      d3.transition()
+        .duration(1500)
+        .tween('rotate', function() {
+          console.log([-user.geo.lat, -user.geo.lng]);
+          var r = d3.interpolate(projection.rotate(), [-user.geo.lng, -user.geo.lat]);
+          return function(t) {
+            projection.rotate(r(t));
+            map.node().width = map.node().width;
+            c.fillStyle = "#bbb"; c.beginPath(); path(land); c.fill();
+            c.fillStyle = "#f00"; c.beginPath(); path(countries[i]); c.fill();
+            c.strokeStyle = "#fff"; c.lineWidth = 0.5; c.beginPath(); path(borders); c.stroke();
+            c.strokeStyle = "#000"; c.lineWidth = 2; c.beginPath(); path(globe); c.stroke();
+          };
+        })
+        .transition()
+        .each("end", function(d) {
+        });
+    });
   };
 
-  var nodes = [], links = [], indexMap = {}, colorMap = {}, mentionCount = 0, limit = 2000;
+  var nodes = [], links = [], indexMap = {}, colorMap = {}, mentionCount = 0, limit = 1000;
 
   d3.select('body').append('div')
       .classed('popcontainer', true);
@@ -133,36 +167,46 @@
   force.start();
 
   var processTweet = function (tweet) {
+    var user;
+    var id = +(tweet.actor.id.split(':')[2]);
     try {
       evict(nodes.length);
-      var user = {
-        name: tweet.actor.preferredUsername,
-        displayName: tweet.actor.displayName,
-        id: +(tweet.actor.id.split(':')[2]),
-        image: new Image(),
-        tweet: tweet,
-        summary: tweet.actor.summary,
-        lastTweeted: new Date(),
-        colorPicker: 'rgb(0,0,0)',
-        geo: extractGeo(tweet),
-        loaded: false
-      };
-
-      user.image.src = "/image?q="+tweet.actor.image;
-      user.image.onload = function() {
-        if (user.loaded) { return;}
-        var c = document.createElement("canvas");
-        d3.select(c).attr({"width": 48, "height": 48});
-        var cx = c.getContext("2d");
-        cx.beginPath();
-        cx.arc(24, 24, 24, 2 * Math.PI, false);
-        cx.clip();
-        cx.drawImage(this, 0,0, 48, 48);
-        var lol = c.toDataURL();
-        this.src = lol;
-        user.loaded = true;
-        createBox(user, tweet.twitter_entities.user_mentions);
-      };
+      if (! indexMap[id]) {
+        user = {
+          name: tweet.actor.preferredUsername,
+          displayName: tweet.actor.displayName,
+          id: +(tweet.actor.id.split(':')[2]),
+          image: new Image(),
+          tweet: tweet,
+          summary: tweet.actor.summary,
+          lastTweeted: new Date(),
+          colorPicker: 'rgb(0,0,0)',
+          geo: extractGeo(tweet),
+          loaded: false
+        };
+        user.image.src = "/image?q="+tweet.actor.image;
+        user.image.onload = function() {
+          if (user.loaded) { return;}
+          var c = document.createElement("canvas");
+          d3.select(c).attr({"width": 48, "height": 48});
+          var cx = c.getContext("2d");
+          cx.beginPath();
+          cx.arc(24, 24, 24, 2 * Math.PI, false);
+          cx.clip();
+          cx.drawImage(this, 0,0, 48, 48);
+          var lol = c.toDataURL();
+          this.src = lol;
+          user.loaded = true;
+          createBox(user, tweet.twitter_entities.user_mentions);
+        };
+        user.colorPicker = genColor();
+        nodes.push(user);
+        colorMap[user.colorPicker] = { index: nodes.length - 1 };
+        indexMap[user.id] = { index: nodes.length - 1, links: [] };
+      } else {
+        nodes[indexMap[id].index].tweet = tweet;
+        nodes[indexMap[id].index].lastTweeted = new Date();
+      }
 
       if (tweet.twitter_entities.user_mentions.length === 0) { return; }
 
@@ -179,18 +223,6 @@
         return mentioned;
       });
 
-      if (! indexMap[user.id]) {
-        user.colorPicker = genColor();
-        nodes.push(user);
-        colorMap[user.colorPicker] = { index: nodes.length - 1 };
-        indexMap[user.id] = { index: nodes.length - 1, links: [] };
-      } else {
-        nodes[indexMap[user.id].index].image = user.image;
-        nodes[indexMap[user.id].index].summary = user.summary;
-        nodes[indexMap[user.id].index].tweet = tweet;
-        nodes[indexMap[user.id].index].lastTweeted = new Date();
-      }
-
       for (var i = 0; i < mentions.length; i++) {
         var m = mentions[i];
         mentionCount += 1;
@@ -202,9 +234,9 @@
           indexMap[m.id] = { index: nodes.length - 1, links: [] };
         }
 
-        if (m.id !== user.id && indexMap[user.id].links.indexOf(m.id) === -1) {
-          indexMap[user.id].links.push(m.id);
-          links.push({source: nodes[indexMap[user.id].index], target: nodes[indexMap[m.id].index], value: 1 });
+        if (m.id !== id && indexMap[id].links.indexOf(m.id) === -1) {
+          indexMap[id].links.push(m.id);
+          links.push({source: nodes[indexMap[id].index], target: nodes[indexMap[m.id].index], value: 1 });
         }
 
         force
@@ -236,7 +268,7 @@
         'height': 24
       });
 
-    var cx = marker[0][0].getContext('2d');
+    var cx = marker.node().getContext('2d');
     cx.drawImage(node.image, 0, 0, 24, 24);
     box.append('p')
       .classed('note', true)

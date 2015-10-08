@@ -11,13 +11,7 @@ templates['tweetdetail'] = template({"1":function(container,depth0,helpers,parti
     + ((stack1 = helpers["if"].call(alias1,((stack1 = (depth0 != null ? depth0.tweet : depth0)) != null ? stack1.gnip : stack1),{"name":"if","hash":{},"fn":container.program(4, data, 0),"inverse":container.noop,"data":data})) != null ? stack1 : "")
     + "\n      <div class=\"tweet-info\">\n\n      </div>\n";
 },"2":function(container,depth0,helpers,partials,data) {
-    var stack1, alias1=container.lambda, alias2=container.escapeExpression;
-
-  return "    <img class=\"tweet-map\" border=\"0\" src=\"//maps.googleapis.com/maps/api/staticmap?center="
-    + alias2(alias1(((stack1 = (depth0 != null ? depth0.geo : depth0)) != null ? stack1.lat : stack1), depth0))
-    + ","
-    + alias2(alias1(((stack1 = (depth0 != null ? depth0.geo : depth0)) != null ? stack1.lng : stack1), depth0))
-    + "&amp;zoom=7&amp;size=310x220\" alt=\"Greenwich, England\">\n";
+    return "    <canvas class=\"tweet-map\" border=\"0\" />\n";
 },"4":function(container,depth0,helpers,partials,data) {
     var stack1;
 
