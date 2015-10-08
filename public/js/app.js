@@ -64,7 +64,7 @@
         }
       }
     }
-    return undefined; // {lat: 40.027435, lng: -105.251945}; // Boulder, CO
+    return  {lat: 40.027435, lng: -105.251945}; // Boulder, CO
   };
 
   var imageScale = function(user) {
@@ -105,41 +105,46 @@
       cx.fill();
     }
 
-    var map = d3.select('#tweetdetails').select('canvas.tweet-map');
-    d3.json('js/world-110m.json', function(world) {
-      var globe = {type: "Sphere"},
-      land = topojson.feature(world, world.objects.land),
-      countries = topojson.feature(world, world.objects.countries).features,
-      borders = topojson.mesh(world, world.objects.countries, function(a, b) { return a !== b; }),
-      i = -1,
-      n = countries.length;
-      var c = map.node().getContext('2d');
-      var projection = d3.geo.orthographic()
-        .translate([160,100])
-        .scale(248)
-        .clipAngle(90);
-      var path = d3.geo.path()
-        .projection(projection)
-        .context(c);
+    if (user.geo) {
+      d3.json('js/world-110m.json', function(world) {
+        var globe = {type: "Sphere"},
+            map = d3.select('canvas.tweet-map'),
+            land = topojson.feature(world, world.objects.land),
+            countries = topojson.feature(world, world.objects.countries).features,
+            borders = topojson.mesh(world, world.objects.countries, function(a, b) { return a !== b; });
+        var i = -1;
+        var c = map.node().getContext('2d');
+        var projection = d3.geo.orthographic()
+          .translate([160,100])
+          .scale(248)
+          .clipAngle(90);
+        var path = d3.geo.path()
+          .projection(projection)
+          .context(c);
 
-      d3.transition()
-        .duration(1500)
-        .tween('rotate', function() {
-          console.log([-user.geo.lat, -user.geo.lng]);
-          var r = d3.interpolate(projection.rotate(), [-user.geo.lng, -user.geo.lat]);
-          return function(t) {
-            projection.rotate(r(t));
-            map.node().width = map.node().width;
-            c.fillStyle = "#bbb"; c.beginPath(); path(land); c.fill();
-            c.fillStyle = "#f00"; c.beginPath(); path(countries[i]); c.fill();
-            c.strokeStyle = "#fff"; c.lineWidth = 0.5; c.beginPath(); path(borders); c.stroke();
-            c.strokeStyle = "#000"; c.lineWidth = 2; c.beginPath(); path(globe); c.stroke();
-          };
-        })
-        .transition()
-        .each("end", function(d) {
-        });
-    });
+        d3.transition()
+          .duration(1500)
+          .tween('rotate', function() {
+            var r = d3.interpolate(projection.rotate(), [-user.geo.lng, -user.geo.lat]);
+            return function(t) {
+              projection.rotate(r(t));
+              map.node().width = map.node().width;
+              c.fillStyle = "#bbb"; c.beginPath(); path(land); c.fill();
+              c.fillStyle = "#f00"; c.beginPath(); path(countries[i]); c.fill();
+              c.strokeStyle = "#fff"; c.lineWidth = 0.5; c.beginPath(); path(borders); c.stroke();
+              c.strokeStyle = "#000"; c.lineWidth = 2; c.beginPath(); path(globe); c.stroke();
+            };
+          })
+          .transition()
+          .each("end", function(d) {
+            var projected = projection([user.geo.lng, user.geo.lat]);
+            c.fillStyle = "#78c5ff";
+            c.beginPath();
+            c.arc(projected[0], projected[1], 8, 2 * Math.PI, false);
+            c.fill();
+          });
+      });
+    }
   };
 
   var nodes = [], links = [], indexMap = {}, colorMap = {}, mentionCount = 0, limit = 1000;
