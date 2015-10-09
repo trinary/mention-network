@@ -190,7 +190,8 @@
           geo: extractGeo(tweet),
           loaded: false
         };
-        user.image.src = "/image?q="+tweet.actor.image;
+        var realImage = tweet.actor.image.replace("_normal","");
+        user.image.src = "/image?q="+realImage;
         user.image.onload = function() {
           if (user.loaded) { return;}
           var c = document.createElement("canvas");

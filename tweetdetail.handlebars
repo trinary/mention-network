@@ -6,7 +6,7 @@
         <canvas class="usericon" width="24", height="24">
       </div>
       <div class="left">
-        <span class="user-name">{{name}}</span>
+        <span class="user-name">@{{name}}</span>
       </div>
     </div>
 
@@ -21,7 +21,7 @@
       <div class="gnip-info">
         Rules
         <ul>
-          {{#each gnip.matching_rules}}
+          {{#each tweet.gnip.matching_rules}}
           <li>{{tag}} {{value}}</li>
           {{/each}}
         </ul>

@@ -16,7 +16,7 @@ templates['tweetdetail'] = template({"1":function(container,depth0,helpers,parti
     var stack1;
 
   return "      <div class=\"gnip-info\">\n        Rules\n        <ul>\n"
-    + ((stack1 = helpers.each.call(depth0 != null ? depth0 : {},((stack1 = (depth0 != null ? depth0.gnip : depth0)) != null ? stack1.matching_rules : stack1),{"name":"each","hash":{},"fn":container.program(5, data, 0),"inverse":container.noop,"data":data})) != null ? stack1 : "")
+    + ((stack1 = helpers.each.call(depth0 != null ? depth0 : {},((stack1 = ((stack1 = (depth0 != null ? depth0.tweet : depth0)) != null ? stack1.gnip : stack1)) != null ? stack1.matching_rules : stack1),{"name":"each","hash":{},"fn":container.program(5, data, 0),"inverse":container.noop,"data":data})) != null ? stack1 : "")
     + "        </ul>\n      </div>\n";
 },"5":function(container,depth0,helpers,partials,data) {
     var helper, alias1=depth0 != null ? depth0 : {}, alias2=helpers.helperMissing, alias3="function", alias4=container.escapeExpression;
@@ -31,7 +31,7 @@ templates['tweetdetail'] = template({"1":function(container,depth0,helpers,parti
 
   return "<div id=\"tweet-item-"
     + alias4(((helper = (helper = helpers.id || (depth0 != null ? depth0.id : depth0)) != null ? helper : alias2),(typeof helper === alias3 ? helper.call(alias1,{"name":"id","hash":{},"data":data}) : helper)))
-    + "\" class=\"tweet-item\">\n  <div class=\"content\">\n\n    <div class=\"user-info\">\n      <div class=\"left\">\n        <canvas class=\"usericon\" width=\"24\", height=\"24\">\n      </div>\n      <div class=\"left\">\n        <span class=\"user-name\">"
+    + "\" class=\"tweet-item\">\n  <div class=\"content\">\n\n    <div class=\"user-info\">\n      <div class=\"left\">\n        <canvas class=\"usericon\" width=\"24\", height=\"24\">\n      </div>\n      <div class=\"left\">\n        <span class=\"user-name\">@"
     + alias4(((helper = (helper = helpers.name || (depth0 != null ? depth0.name : depth0)) != null ? helper : alias2),(typeof helper === alias3 ? helper.call(alias1,{"name":"name","hash":{},"data":data}) : helper)))
     + "</span>\n      </div>\n    </div>\n\n"
     + ((stack1 = helpers["if"].call(alias1,(depth0 != null ? depth0.tweet : depth0),{"name":"if","hash":{},"fn":container.program(1, data, 0),"inverse":container.noop,"data":data})) != null ? stack1 : "")

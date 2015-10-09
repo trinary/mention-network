@@ -26,9 +26,6 @@ canvas.main {
   top: 2em;
 }
 
-.marker {
-}
-
 .tweet-map {
   width: 320px;
   height: 200px;
@@ -39,6 +36,10 @@ canvas.main {
 
 .note {
   padding-bottom: 4px;
+}
+
+.content {
+  color: #fff;
 }
 
 .node {
