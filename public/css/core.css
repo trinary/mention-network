@@ -16,7 +16,7 @@ canvas.main {
 .popcontainer {
   position: absolute;
   left: 1.5em;
-  top: 25%;
+  top: 150px;
   width: 15%
 }
 
@@ -97,6 +97,9 @@ canvas.main {
   margin-right: 1em;
   font-weight: 500;
   white-space: nowrap;
+  width: 150px;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 
