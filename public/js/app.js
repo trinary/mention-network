@@ -26,22 +26,6 @@
   //
   //setup some common vars
 
-  var nextCol = 1;
-  function genColor(){
-    var ret = [];
-    // via http://stackoverflow.com/a/15804183
-    if(nextCol > 16777215) {
-      nextCol = 1;
-    }
-    ret.push(nextCol & 0xff); // R
-    ret.push((nextCol & 0xff00) >> 8); // G 
-    ret.push((nextCol & 0xff0000) >> 16); // B
-
-    nextCol += 1;
-    var col = 'rgb(' + ret.join(',') + ')';
-    return col;
-  }
-
   var updateConfig = function (config) {
       force
         .linkStrength(config.linkstrength)
@@ -101,7 +85,7 @@
     if (user.loaded) {
       cx.drawImage(user.image, 0, 0, 24, 24);
     } else {
-      cx.fillStyle = '#34ffe9';
+      cx.fillStyle = mentionColor;
       cx.arc(12, 12, 12, 2 * Math.PI, false);
       cx.fill();
     }
@@ -149,7 +133,7 @@
     }
   };
 
-  var nodes = [], links = [], indexMap = {}, colorMap = {}, mentionCount = 0, limit = 1000;
+  var nodes = [], links = [], indexMap = {}, mentionCount = 0, limit = 1000;
 
   d3.select('body').append('div')
       .classed('popcontainer', true);
@@ -163,6 +147,9 @@
 
   var canvas = document.getElementsByTagName('canvas')[0];
   var context = canvas.getContext('2d');
+  var mentionColorOptions = ['#1729A7', '#7A6FB9', '#223CF3'];
+  var mentionColor = mentionColorOptions[Math.floor(Math.random() * mentionColorOptions.length)];
+  console.log("Color is " + mentionColor);
 
   // build force layout
   var force = d3.layout.force()
@@ -187,7 +174,6 @@
           tweet: tweet,
           summary: tweet.actor.summary,
           lastTweeted: new Date(),
-          colorPicker: 'rgb(0,0,0)',
           geo: extractGeo(tweet),
           loaded: false
         };
@@ -206,9 +192,7 @@
           user.loaded = true;
           createBox(user, tweet.twitter_entities.user_mentions);
         };
-        user.colorPicker = genColor();
         nodes.push(user);
-        colorMap[user.colorPicker] = { index: nodes.length - 1 };
         indexMap[user.id] = { index: nodes.length - 1, links: [] };
       } else {
         nodes[indexMap[id].index].tweet = tweet;
@@ -223,7 +207,6 @@
           displayName: m.name,
           image: new Image(),
           id: m.id,
-          colorPicker: 'rgb(0,0,0)',
           loaded: false
         };
 
@@ -235,9 +218,7 @@
         mentionCount += 1;
 
         if (! indexMap[m.id]) {
-          m.colorPicker = genColor();
           nodes.push(m);
-          colorMap[m.colorPicker] = { index: nodes.length - 1 };
           indexMap[m.id] = { index: nodes.length - 1, links: [] };
         }
 
@@ -261,7 +242,6 @@
       nodes = [];
       links = [];
       indexMap = {};
-      colorMap = {};
     }
   }
 
@@ -306,7 +286,7 @@
 
     // draw nodes
     context.beginPath();
-    context.fillStyle = '#34ffe9';
+    context.fillStyle = mentionColor;
     nodes.forEach(function(d) {
       var dx = Math.round(d.x);
       var dy = Math.round(d.y);
