@@ -27,7 +27,7 @@
       klass: "linkstrength",
       name: "Link Strength",
       min: 0,
-      max: 10,
+      max: 1,
       start: defaults.linkstrength,
       decimal: true,
       callback: update
@@ -44,8 +44,8 @@
     {
       klass: "linkdistance",
       name: "Link Distance",
-      min: 0,
-      max: 60,
+      min: 10,
+      max: 80,
       decimal: true,
       start: defaults.linkdistance,
       callback: update
@@ -53,8 +53,8 @@
     {
       klass: "charge",
       name: "Charge",
-      min: -60,
-      max: 60,
+      min: -80,
+      max: 0,
       start: defaults.charge,
       callback: update
     },

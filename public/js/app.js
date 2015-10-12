@@ -48,7 +48,8 @@
         .friction(config.friction)
         .linkDistance(config.linkdistance)
         .charge(config.charge)
-        .gravity(config.gravity);
+        .gravity(config.gravity)
+        .start();
   };
 
   var extractGeo = function(tweet) {
@@ -190,8 +191,7 @@
           geo: extractGeo(tweet),
           loaded: false
         };
-        var realImage = tweet.actor.image.replace("_normal","");
-        user.image.src = "/image?q="+realImage;
+        user.image.src = "/image?q="+tweet.actor.image;
         user.image.onload = function() {
           if (user.loaded) { return;}
           var c = document.createElement("canvas");
