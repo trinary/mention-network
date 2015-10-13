@@ -82,12 +82,9 @@ canvas.main {
 .node * {
   display: inline-block;
   vertical-align: middle;
-  padding: 0 .5em;
+  padding: 0 0 0 .5em;
 }
 
-.node .marker {
-  margin-left: .5em;
-}
 
 .hidden {
   display: none;
