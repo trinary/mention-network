@@ -12,6 +12,17 @@
     <script src="handlebars/handlebars.runtime.min.js"></script>
     <script src="topojson/topojson.js"></script>
     <script src="js/tweetdetail.js"></script>
+    <script src="js/postMessage.js"></script>
+    <script>
+      if (_postMessage) {
+        window.addEventListener('click', function(e) {
+          _postMessage.post({
+            targetId: 'parent',
+            action: 'resetTimer'
+          });
+        });
+      }
+    </script>
 
     <link rel="stylesheet" href="css/core.css">
 
