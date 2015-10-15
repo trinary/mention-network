@@ -155,8 +155,8 @@
 
   var canvas = document.getElementsByTagName('canvas')[0];
   var context = canvas.getContext('2d');
-  var mentionColorOptions = ['#1729A7', '#7A6FB9', '#223CF3'];
-  var mentionColor = mentionColorOptions[Math.floor(Math.random() * mentionColorOptions.length)];
+//  var mentionColorOptions = ['#1729A7', '#7A6FB9', '#223CF3'];
+  var mentionColor = "#1729A7";
   console.log("Color is " + mentionColor);
 
   // build force layout
