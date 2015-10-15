@@ -3,7 +3,6 @@ body {
   overflow: hidden;
   -webkit-touch-callout: none;
   -webkit-user-select: none;
-  -khtml-user-select: none;
   -moz-user-select: none;
   -ms-user-select: none;
   user-select: none;
@@ -85,7 +84,6 @@ canvas.main {
   padding: 0 0 0 .5em;
 }
 
-
 .hidden {
   display: none;
 }
@@ -98,8 +96,6 @@ canvas.main {
   overflow: hidden;
   text-overflow: ellipsis;
 }
-
-
 
 iframe[seamless]{
   background-color: transparent;

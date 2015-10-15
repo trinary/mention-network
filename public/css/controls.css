@@ -1,3 +1,11 @@
+body {
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
 .slider {
   font-family: 'Gotham Narrow SSm';
   display: block;
@@ -65,13 +73,6 @@ left: -2em;
     width: 80%;
     margin-left: 10%;
   }
-}
-
-body {
-  -webkit-user-select: none;  /* Chrome all / Safari all */
-  -moz-user-select: none;     /* Firefox all */
-  -ms-user-select: none;      /* IE 10+ */
-  user-select: none;
 }
 
 @media tv and (min-width: 1920px) and (orientation: landscape) {
