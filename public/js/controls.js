@@ -72,20 +72,20 @@
 
   var isDefault = function(newState) {
     return _.isEqual(defaults, newState);
-  }
+  };
 
-  var sliders = d3.selectAll(".slider")
+  var sliders = d3.select('body').selectAll('.slider')
     .data(params);
 
   sliders
     .enter()
-    .append("div")
-    .attr("class", function(d,i) { return ['slider', d.klass].join(' ');})
-    .append("label")
-    .text(function(d,i) { return d.name; })
+    .append('div')
+    .attr('class', function(d,i) { return ['slider', d.klass].join(' ');})
+    .append('label')
+    .text(function(d,i) { return d.name; });
 
   sliders
-    .append("input")
+    .append('input')
     .each(function(d,i) { 
       Powerange(this, d);
     });
