@@ -15,6 +15,7 @@
     <script src="lodash/lodash.min.js"></script>
     <script src="js/postMessage.js"></script>
     <script>
+      _postMessage.listen = true;
       if (_postMessage) {
         window.addEventListener('click', function(e) {
           _postMessage.post({
