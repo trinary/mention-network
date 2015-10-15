@@ -37,19 +37,27 @@
   };
 
   var extractGeo = function(tweet) {
-    var lat, long;
+    var lat, long, ret;
     if (tweet.location) {
       if (tweet.location.geo) { 
         if (tweet.location.geo.type === 'Polygon') {
-          var ret = { 
+          ret = { 
             lat: d3.mean(tweet.location.geo.coordinates[0], function(d) { return d[1]; }), 
             lng: d3.mean(tweet.location.geo.coordinates[0], function(d) { return d[0]; })
           };
           return ret;
         }
       }
+    } else if (tweet.gnip.profileLocations[0]) {
+      if (tweet.gnip.profileLocations[0].geo.type == 'point') {
+        ret = {
+          lat: tweet.gnip.profileLocations[0].geo.coordinates[1],
+          lng: tweet.gnip.profileLocations[0].geo.coordinates[0]
+        };
+        return ret;
+      }
     }
-    return  {lat: 40.027435, lng: -105.251945}; // Boulder, CO
+    return undefined;
   };
 
   var imageScale = function(user) {

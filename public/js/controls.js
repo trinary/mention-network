@@ -9,7 +9,6 @@
     };
     container.each(function(d, i) { state[d.klass] = this.value; });
     if (! isDefault(state)) {
-//      console.log(state);
       socket.emit('config', state);
     }
   };
@@ -44,8 +43,8 @@
     {
       klass: "linkdistance",
       name: "Link Distance",
-      min: 10,
-      max: 80,
+      min: 1,
+      max: 180,
       decimal: true,
       start: defaults.linkdistance,
       callback: update
