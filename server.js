@@ -11,6 +11,7 @@ var ps = require('powersocket');
 var https = require('https');
 var url = require('url');
 var request = require('request');
+var port = process.env.MENTION_PORT || 3000;
 
 ps.Connection({
   url: process.env.POWERSOCKET_URL,
@@ -51,7 +52,7 @@ app.get('/image', function(req, res) {
   request(imgUrl.href).pipe(res);
 });
 
-http.listen(3000, function(){
-  console.log('listening on *:3000');
+http.listen(port, function(){
+  console.log('listening on *:' + port);
 });
 
