@@ -1,0 +1,21 @@
+{
+  "rules" :
+  [
+    {
+      "value" : "flight",
+      "tag" : "flight"
+    },
+    {
+      "value" : "data",
+      "tag": "data"
+    },
+    {
+      "value" : "mobile",
+      "tag": "mobile"
+    },
+    {
+      "value" : "social",
+      "tag": "social"
+    }
+  ]
+}

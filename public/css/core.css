@@ -20,7 +20,7 @@ canvas.main {
 }
 
 #tweetdetails {
-  right:0;
+  right:-20%;
   width: 15%;
   position: absolute;
   top: 0;
