@@ -74,6 +74,33 @@
     }
   };
 
+  var langTable = {
+    "ar": "Arabic" ,
+    "zh": "Chinese" ,
+    "da": "Danish" ,
+    "nl": "Dutch",
+    "en": "English",
+    "fi": "Finnish",
+    "fr": "French" ,
+    "de": "German" ,
+    "el": "Greek" ,
+    "he": "Hebrew" ,
+    "id": "Indonesian" ,
+    "it": "Italian" ,
+    "ja": "Japanese" ,
+    "ko": "Korean" ,
+    "no": "Norwegian" ,
+    "fa": "Persian" ,
+    "pl": "Polish" ,
+    "pt": "Portuguese",
+    "ru": "Russian" ,
+    "es": "Spanish" ,
+    "sv": "Swedish" ,
+    "th": "Thai" ,
+    "Tr": "Turkish" ,
+    "uk": "Ukrainian" 
+  };
+
   var handleClick = function() {
     var x = d3.mouse(this)[0];
     var y = d3.mouse(this)[1];
@@ -192,6 +219,7 @@
           summary: tweet.actor.summary,
           lastTweeted: new Date(),
           geo: extractGeo(tweet),
+          language: langTable[tweet.gnip.language.value],
           loaded: false
         };
         user.image.src = "/image?q="+tweet.actor.image;
