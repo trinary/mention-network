@@ -19,10 +19,11 @@
     <div class="extras">
       {{#if tweet.gnip }} 
       <div class="gnip-info">
-        <h2>Rules</h2>
+        <h2>Rules:</h2>
+        <br/>
         <ul>
           {{#each tweet.gnip.matching_rules}}
-          <li>{{tag}} {{value}}</li>
+          <li>Matched "{{tag}}"</li>
           {{/each}}
         </ul>
       </div>
