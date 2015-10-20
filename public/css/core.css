@@ -56,7 +56,9 @@ canvas.main {
   margin: 0;
 }
 
-
+.tweet-item .content .tweet-text {
+  font-size: 14px;
+}
 
 .note {
   padding-bottom: 4px;
