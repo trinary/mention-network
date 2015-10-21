@@ -219,7 +219,6 @@
           summary: tweet.actor.summary,
           lastTweeted: new Date(),
           geo: extractGeo(tweet),
-          language: langTable[tweet.gnip.language.value],
           loaded: false
         };
         user.image.src = "/image?q="+tweet.actor.image;
