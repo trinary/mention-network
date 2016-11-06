@@ -14,19 +14,8 @@
 
   // connect to our socket server
   var socket = io();
-/*  var stats = new Stats();
-  stats.setMode(0);
-  stats.domElement.style.position = 'absolute';
-  stats.domElement.style.left = window.innerWidth - 100 + 'px';
-  stats.domElement.style.top = '0px';
 
-  */
-
-//  document.body.appendChild(stats.domElement);
-  //
-  //setup some common vars
-
-  var updateConfig = function (config) {
+/*  var updateConfig = function (config) {
       force
         .linkStrength(config.linkstrength)
         .friction(config.friction)
@@ -36,6 +25,7 @@
         .start();
   };
 
+  */
   var extractGeo = function(tweet) {
     var lat, long, ret;
     if (tweet.location) {
@@ -108,9 +98,9 @@
     var touchRadius = 24;
     var users = nodes.filter(function(d) { return Math.pow(x - d.x, 2) + Math.pow(y - d.y, 2) < 400; });
     if (users.length === 0) { 
-      d3.select('#tweetdetails').transition()
-        .style({'right':'-20%'})
-        .each("end", function(d) {
+      var details = d3.select('#tweetdetails').transition()
+        .style('right', '-20%')
+        .on("end", function() {
           d3.select(this).html("");
         });
       return;
@@ -118,9 +108,9 @@
     var user = users[0];
 
     var template = Handlebars.templates.tweetdetail(user);
-    d3.select('#tweetdetails').html(template);
-    d3.select('#tweetdetails').transition()
-      .style({'right':'0%'});
+    d3.select('#tweetdetails').html(template)
+      .transition()
+      .style('right', '0%');
     var marker = d3.select('#tweetdetails').select('canvas');
     var cx = marker.node().getContext('2d');
     if (user.loaded) {
@@ -168,7 +158,7 @@
     }
   };
 
-  var nodes = [], links = [], indexMap = {}, mentionCount = 0, limit = 1000;
+  var nodes = [], links = [], indexMap = {}, mentionCount = 0, limit = 500;
 
   d3.select('body').append('div')
       .classed('popcontainer', true);
@@ -193,20 +183,20 @@
     borders = topojson.mesh(world, world.objects.countries, function(a, b) { return a !== b; });
   });
 
-
-
   // build force layout
-  var force = d3.layout.force()
-      .size([window.innerWidth, window.innerHeight])
-      .nodes(nodes)
-      .links(links)
+  var linkForces = d3.forceLink(links);
+  var force = d3.forceSimulation(nodes)
+      .force("charge", d3.forceManyBody())
+      .force("link",   linkForces)
+      .force("center", d3.forceCenter(window.innerWidth/2, window.innerHeight/2))
       .on('tick', tick);
 
-  force.start();
-
   var processTweet = function (tweet) {
+
+    if (tweet.twitter_entities.user_mentions.length === 0) { return; }
     var user;
     var id = +(tweet.actor.id.split(':')[2]);
+
     try {
       evict(nodes.length);
       if (! indexMap[id]) {
@@ -222,7 +212,7 @@
           loaded: false
         };
         user.image.src = "/image?q="+tweet.actor.image;
-        user.image.onload = function() {
+/*        user.image.onload = function() {
           if (user.loaded) { return;}
           var c = document.createElement("canvas");
           d3.select(c).attr({"width": 48, "height": 48});
@@ -236,14 +226,13 @@
           user.loaded = true;
           createBox(user, tweet.twitter_entities.user_mentions);
         };
+        */
         nodes.push(user);
         indexMap[user.id] = { index: nodes.length - 1, links: [] };
       } else {
         nodes[indexMap[id].index].tweet = tweet;
         nodes[indexMap[id].index].lastTweeted = new Date();
       }
-
-      if (tweet.twitter_entities.user_mentions.length === 0) { return; }
 
       var mentions = tweet.twitter_entities.user_mentions.map(function (m) {
         var mentioned = {
@@ -268,13 +257,13 @@
 
         if (m.id !== id && indexMap[id].links.indexOf(m.id) === -1) {
           indexMap[id].links.push(m.id);
-          links.push({source: nodes[indexMap[id].index], target: nodes[indexMap[m.id].index], value: 1 });
+          links.push({source: nodes[indexMap[id].index], target: nodes[indexMap[m.id].index]});
         }
 
-        force
-          .nodes(nodes)
-          .links(links)
-          .start();
+        linkForces = d3.forceLink(links);
+        force.nodes(nodes)
+          .force("link", linkForces)
+          .restart();
       }
     } catch(e) {
       console.log('Error in tweet event handler: ' + e, e.stack);
@@ -286,6 +275,11 @@
       nodes = [];
       links = [];
       indexMap = {};
+      linkForces = d3.forceLink(links);
+      linkForces(links);
+      force.nodes(nodes)
+        .force("link", linkForces)
+        .restart();
     }
   }
 
@@ -293,7 +287,7 @@
     if (mentions.length === 0) { return; }
     var box = d3.select('.popcontainer').insert('div', ':first-child').classed('node', true);
     var marker = box.append('canvas')
-      .classed('marker', true)
+      marker.classed('marker', true)
       .attr({
         'width': 24,
         'height': 24
@@ -353,5 +347,4 @@
   }
 
   socket.on('tweet', processTweet);
-  socket.on('config', updateConfig);
 }());

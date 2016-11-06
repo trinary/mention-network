@@ -14,7 +14,7 @@
     "tests"
   ],
   "dependencies": {
-    "d3": "~3.5.6",
+    "d3": "~4.2.7",
     "dat-gui": "~0.5.1",
     "powerange": "~0.0.2",
     "lodash": "~3.10.1",
