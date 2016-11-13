@@ -22,7 +22,7 @@ ps.Connection({
 
 
 io.on('connection', function(socket) {
-  console.log('Got a client');
+  console.log('Got a client', socket);
   socket.on('config', function(config) {
     io.sockets.emit('config', config);
   });
