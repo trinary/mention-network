@@ -158,7 +158,7 @@
     }
   };
 
-  var nodes = [], links = [], indexMap = {}, mentionCount = 0, limit = 200;
+  var nodes = [], links = [], indexMap = {}, mentionCount = 0, limit = 2000;
 
   d3.select('body').append('div')
       .classed('popcontainer', true);
@@ -186,6 +186,9 @@
   // build force layout
   var linkForces = d3.forceLink(links);
   var bodyForce = d3.forceManyBody()
+    .theta(0.5)
+    .strength(-1) 
+    .distanceMin(48)
     .distanceMax(window.innerWidth/4);
   var force = d3.forceSimulation()
       .force("charge", bodyForce)
@@ -209,25 +212,26 @@
           summary: tweet.actor.summary,
           lastTweeted: new Date(),
           geo: extractGeo(tweet),
-          loaded: false
+          loaded: false,
+          x: 0,
+          y: 0
         };
         user.image.src = "/image?q="+tweet.actor.image;
-/*
+
           user.image.onload = function() {
-          if (user.loaded) { return;}
-          var c = document.createElement("canvas");
-          d3.select(c).attr({"width": 48, "height": 48});
-          var cx = c.getContext("2d");
-          cx.beginPath();
-          cx.arc(24, 24, 24, 2 * Math.PI, false);
-          cx.clip();
-          cx.drawImage(this, 0,0, 48, 48);
-          var lol = c.toDataURL();
-          this.src = lol;
-          user.loaded = true;
-          createBox(user, tweet.twitter_entities.user_mentions);
+            if (user.loaded) { return; }
+            var c = document.createElement("canvas");
+            d3.select(c).attr({"width": 48, "height": 48});
+            var cx = c.getContext("2d");
+            cx.beginPath();
+            cx.arc(24, 24, 24, 2 * Math.PI, false);
+            cx.clip();
+            cx.drawImage(this, 0,0, 48, 48);
+            this.src = c.toDataURL();
+            user.loaded = true;
+//          createBox(user, tweet.twitter_entities.user_mentions);
         };
-*/
+
         nodes.push(user);
         indexMap[user.id] = { index: nodes.length - 1, links: [] };
       } else {
@@ -263,7 +267,7 @@
         }
       }
 
-      force = force.nodes(nodes).restart();
+      force = force.nodes(nodes).alpha(1.0);
     } catch(e) {
       console.log('Error in tweet event handler: ' + e, e.stack);
     }
@@ -274,12 +278,17 @@
       nodes = [];
       links = [];
       indexMap = {};
-      linkForces = d3.linkForces(links);
-    force = d3.forceSimulation()
-      .force("charge", bodyForce)
-      .force("link",   linkForces)
-      .force("center", centerForce)
-      .on('tick', tick);
+      linkForces = d3.forceLink(links);
+
+      bodyForce = d3.forceManyBody()
+        .theta(0.5)
+        .strength(-1) 
+        .distanceMin(48)
+        .distanceMax(window.innerWidth/4);
+      force = d3.forceSimulation()
+        .force("charge", bodyForce)
+        .force("link",   linkForces)
+        .on('tick', tick);
     }
   }
 
@@ -314,11 +323,6 @@
     context.save();
     context.translate(~~window.innerWidth/2, ~~window.innerHeight/2);
 
-
-    if (nodes.length > 0) {
-      console.log(nodes[0].x, nodes[0].y);
-    }
-
     // draw links
     context.strokeStyle = '#ccc';
     context.beginPath();
@@ -337,10 +341,9 @@
       context.moveTo(dx, dy);
       if (d.loaded) {
         try {
-          var scale = imageScale(d);
+          var scale = 1; //imageScale(d);
           var size = 24 * scale;
-
-          context.drawImage(d.image, dx-(size/2), dy-(size/2), size, size);
+          context.drawImage(d.image, dx-(size/2), dy+(size/2), size, size);
         } catch(e) {
           console.log("Error in drawImage(): " + e, e.stack);
         }
