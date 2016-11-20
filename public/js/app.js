@@ -50,6 +50,22 @@
     return undefined;
   };
 
+  var rebuildForce = function() {
+    forces = {};
+    forces["link"] = d3.forceLink(links)
+      .distance(64);
+    forces["charge"] = d3.forceManyBody()
+      .theta(0.5)
+      .strength(-20) 
+      .distanceMin(48)
+      .distanceMax(window.innerWidth/4);
+
+    force = d3.forceSimulation()
+      .force("charge", forces["charge"])
+      .force("link",   forces["link"])
+      .on('tick', tick);
+  };
+
   var imageScale = function(user) {
     var now = new Date();
     var diff = now - user.lastTweeted;
@@ -158,7 +174,7 @@
     }
   };
 
-  var nodes = [], links = [], indexMap = {}, mentionCount = 0, limit = 2000;
+  var nodes = [], links = [], indexMap = {}, mentionCount = 0, limit = 100;
 
   d3.select('body').append('div')
       .classed('popcontainer', true);
@@ -176,6 +192,8 @@
   var location = [0,0];
   var globe, map, land, countries, borders;
   var i = -1;
+  var force, forces;
+
   d3.json('js/world-110m.json', function(world) {
     globe = {type: "Sphere"};
     land = topojson.feature(world, world.objects.land);
@@ -184,17 +202,21 @@
   });
 
   // build force layout
-  var linkForces = d3.forceLink(links);
+  rebuildForce();
+  /*
+  var linkForce = d3.forceLink(links)
+    .distance(64);
   var bodyForce = d3.forceManyBody()
     .theta(0.5)
-    .strength(-1) 
+    .strength(-20) 
     .distanceMin(48)
     .distanceMax(window.innerWidth/4);
   var force = d3.forceSimulation()
       .force("charge", bodyForce)
-      .force("link",   linkForces)
+      .force("link",   linkForce)
       .on('tick', tick);
 
+  */
   var processTweet = function (tweet) {
     if (tweet.twitter_entities.user_mentions.length === 0) { return; }
     var user;
@@ -273,22 +295,27 @@
     }
   };
 
+  function trimEvict(nodeCount) {
+    var target;
+    if (nodeCount < limit) { return; }
+
+    var toDelete = nodes.filter(function(d,i) {
+      var src = d.id;
+      var tgt = indexMap[d.id].links[0]
+      return (indexMap[d.id].links.length == 1 && indexMap[d.id.links[0]].links.links.length ==1 );
+    });
+
+    for(i of toDelete) {
+      indexMap.filter(function(d,i) { });
+    }
+  }
+
   function clearEvict(nodeCount) {
     if (nodeCount > limit) {
       nodes = [];
       links = [];
       indexMap = {};
-      linkForces = d3.forceLink(links);
-
-      bodyForce = d3.forceManyBody()
-        .theta(0.5)
-        .strength(-1) 
-        .distanceMin(48)
-        .distanceMax(window.innerWidth/4);
-      force = d3.forceSimulation()
-        .force("charge", bodyForce)
-        .force("link",   linkForces)
-        .on('tick', tick);
+      rebuildForce();
     }
   }
 
@@ -315,7 +342,8 @@
       .remove();
   }
 
-  function evict(nodeCount) { clearEvict(nodeCount); }
+//  var evict = trimEvict;
+  var evict = clearEvict;
 
   function tick() {
 //    stats.begin();
@@ -342,8 +370,8 @@
       if (d.loaded) {
         try {
           var scale = 1; //imageScale(d);
-          var size = 24 * scale;
-          context.drawImage(d.image, dx-(size/2), dy+(size/2), size, size);
+          var size = 48; //24 * scale;
+          context.drawImage(d.image, d.x-(size/2), d.y-(size/2));
         } catch(e) {
           console.log("Error in drawImage(): " + e, e.stack);
         }
