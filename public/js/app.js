@@ -15,17 +15,18 @@
   // connect to our socket server
   var socket = io();
 
-/*  var updateConfig = function (config) {
-      force
-        .linkStrength(config.linkstrength)
-        .friction(config.friction)
-        .linkDistance(config.linkdistance)
-        .charge(config.charge)
-        .gravity(config.gravity)
-        .start();
+/*
+  var updateConfig = function (config) {
+    force
+      .linkStrength(config.linkstrength)
+      .friction(config.friction)
+      .linkDistance(config.linkdistance)
+      .charge(config.charge)
+      .gravity(config.gravity)
+      .start();
   };
 
-  */
+*/
   var extractGeo = function(tweet) {
     var lat, long, ret;
     if (tweet.location) {
@@ -174,7 +175,7 @@
     }
   };
 
-  var nodes = [], links = [], indexMap = {}, mentionCount = 0, limit = 100;
+  var nodes = [], links = [], indexMap = d3.map(), mentionCount = 0, limit = 2000, lastEvicted = new Date();
 
   d3.select('body').append('div')
       .classed('popcontainer', true);
@@ -221,10 +222,11 @@
     if (tweet.twitter_entities.user_mentions.length === 0) { return; }
     var user;
     var id = +(tweet.actor.id.split(':')[2]);
+    var time = new Date();
 
     try {
-      evict(nodes.length);
-      if (! indexMap[id]) {
+      if (lastEvicted < time - 10000) { evict(nodes.length); }
+      if (! indexMap.has(id)) {
         user = {
           name: tweet.actor.preferredUsername,
           displayName: tweet.actor.displayName,
@@ -251,18 +253,18 @@
             cx.drawImage(this, 0,0, 48, 48);
             this.src = c.toDataURL();
             user.loaded = true;
-//          createBox(user, tweet.twitter_entities.user_mentions);
         };
 
         nodes.push(user);
-        indexMap[user.id] = { index: nodes.length - 1, links: [] };
+        indexMap.set(user.id, { index: nodes.length - 1, links: [] });
       } else {
-        nodes[indexMap[id].index].tweet = tweet;
-        nodes[indexMap[id].index].lastTweeted = new Date();
+        let ref = indexMap.get(id);
+        nodes[ref.index].tweet = tweet;
+        nodes[ref.index].lastTweeted = new Date();
       }
 
       var mentions = tweet.twitter_entities.user_mentions.map(function (m) {
-        var mentioned = {
+        let mentioned = {
           name: m.screen_name,
           displayName: m.name,
           image: new Image(),
@@ -274,17 +276,19 @@
       });
 
       for (var i = 0; i < mentions.length; i++) {
-        var m = mentions[i];
+        let m = mentions[i];
         mentionCount += 1;
 
-        if (! indexMap[m.id]) {
+        if (! indexMap.has(m.id)) {
           nodes.push(m);
-          indexMap[m.id] = { index: nodes.length - 1, links: [] };
+          indexMap.set(m.id, { index: nodes.length - 1, links: [] });
         }
 
-        if (m.id !== id && indexMap[id].links.indexOf(m.id) === -1) {
-          indexMap[id].links.push(m.id);
-          var link = {source: indexMap[id].index, target: indexMap[m.id].index};
+        if (m.id !== id && indexMap.get(id).links.indexOf(m.id) === -1) {
+          let ref = indexMap.get(id);
+          ref.links.push(m.id);
+          indexMap.set(id, ref);
+          let link = {source: ref.index, target: indexMap.get(m.id).index};
           links.push(link);
         }
       }
@@ -298,52 +302,29 @@
   function trimEvict(nodeCount) {
     var target;
     if (nodeCount < limit) { return; }
+    var toDelete = [];
 
-    var toDelete = nodes.filter(function(d,i) {
-      var src = d.id;
-      var tgt = indexMap[d.id].links[0]
-      return (indexMap[d.id].links.length == 1 && indexMap[d.id.links[0]].links.links.length ==1 );
+    nodes = nodes.filter(function(d,i) {
+      return indexMap.get(d.id).links.length < 2
     });
-
-    for(i of toDelete) {
-      indexMap.filter(function(d,i) { });
-    }
+    return  "Ffffffuck";
   }
 
   function clearEvict(nodeCount) {
     if (nodeCount > limit) {
       nodes = [];
       links = [];
-      indexMap = {};
+      indexMap = d3.map();
       rebuildForce();
     }
   }
 
-  function createBox(node, mentions) {
-    if (mentions.length === 0) { return; }
-    var box = d3.select('.popcontainer').insert('div', ':first-child').classed('node', true);
-    var marker = box.append('canvas')
-      marker.classed('marker', true)
-      .attr({
-        'width': 24,
-        'height': 24
-      });
 
-    var cx = marker.node().getContext('2d');
-    cx.drawImage(node.image, 0, 0, 24, 24);
-    box.append('p')
-      .classed('note', true)
-      .text(node.name);
-
-    box
-      .transition()
-      .delay(5000)
-      .style('opacity', 0)
-      .remove();
-  }
-
-//  var evict = trimEvict;
-  var evict = clearEvict;
+  var evict = function(nodeCount) {
+    console.log("Eviction check: node count at " + nodeCount);
+    lastEvicted = new Date();
+    clearEvict(nodeCount);
+  };
 
   function tick() {
 //    stats.begin();

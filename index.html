@@ -8,6 +8,13 @@
     <meta content='True' name='HandheldFriendly' />
     <meta content='width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0' name='viewport' />
 
+    <script src="d3/d3.min.js" charset="utf-8"></script>
+    <script src="stats.js/build/stats.min.js"></script>
+    <script src="handlebars/handlebars.runtime.min.js"></script>
+    <script src="topojson/topojson.js"></script>
+    <script src="js/tweetdetail.js"></script>
+    <script src="js/postMessage.js"></script>
+
     <link rel="stylesheet" href="css/core.css">
     <link rel="stylesheet" href="css/controls.css">
     <style>
@@ -24,8 +31,9 @@
 
   </head>
   <body>
-    <iframe seamless="yup" id="vis" src="/vis"></iframe>
-    <iframe seamless="yup" id="controls" src="/controls" height="66%" width="100%"></iframe>
-
+    <!-- socket.io -->
+    <script src="/socket.io/socket.io.js"></script>
+    <!-- APP CODE -->
+    <script src="js/app.js"></script>
   </body>
 </html>
